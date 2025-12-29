@@ -1,29 +1,29 @@
+import AdminLayout from '@/Layouts/AdminLayout';
 import { Link, router } from '@inertiajs/react';
 import {
-    Title,
-    Paper,
-    Text,
-    Group,
-    Table,
-    Badge,
     ActionIcon,
-    TextInput,
-    SegmentedControl,
-    Pagination,
-    Menu,
     Avatar,
+    Badge,
+    Group,
+    Menu,
+    Pagination,
+    Paper,
+    SegmentedControl,
+    Table,
+    Text,
+    TextInput,
+    Title,
 } from '@mantine/core';
 import { useDebouncedValue } from '@mantine/hooks';
 import {
-    IconEye,
     IconCheck,
-    IconX,
-    IconTrash,
-    IconSearch,
     IconDotsVertical,
+    IconEye,
+    IconSearch,
+    IconTrash,
+    IconX,
 } from '@tabler/icons-react';
-import { useState, useEffect } from 'react';
-import AdminLayout from '@/Layouts/AdminLayout';
+import { useEffect, useState } from 'react';
 
 interface Comment {
     id: number;
@@ -64,31 +64,47 @@ const statusColors: Record<string, string> = {
     deleted: 'gray',
 };
 
-export default function CommentsIndex({ comments, filters }: CommentsIndexProps) {
+export default function CommentsIndex({
+    comments,
+    filters,
+}: CommentsIndexProps) {
     const [search, setSearch] = useState(filters.search || '');
     const [debouncedSearch] = useDebouncedValue(search, 300);
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: Only trigger on debounced search change
     useEffect(() => {
         if (debouncedSearch !== (filters.search || '')) {
-            router.get('/admin/comments', {
-                status: filters.status,
-                search: debouncedSearch || undefined,
-            }, { preserveState: true });
+            router.get(
+                '/admin/comments',
+                {
+                    status: filters.status,
+                    search: debouncedSearch || undefined,
+                },
+                { preserveState: true },
+            );
         }
     }, [debouncedSearch]);
 
     const handleStatusChange = (status: string) => {
-        router.get('/admin/comments', {
-            status,
-            search: search || undefined,
-        }, { preserveState: true });
+        router.get(
+            '/admin/comments',
+            {
+                status,
+                search: search || undefined,
+            },
+            { preserveState: true },
+        );
     };
 
     const handleAction = (commentId: number, action: string) => {
-        router.post(`/admin/comments/${commentId}/${action}`, {}, {
-            preserveState: true,
-            preserveScroll: true,
-        });
+        router.post(
+            `/admin/comments/${commentId}/${action}`,
+            {},
+            {
+                preserveState: true,
+                preserveScroll: true,
+            },
+        );
     };
 
     const handleDelete = (commentId: number) => {
@@ -144,7 +160,11 @@ export default function CommentsIndex({ comments, filters }: CommentsIndexProps)
                             <Table.Tr key={comment.id}>
                                 <Table.Td>
                                     <Group gap="sm">
-                                        <Avatar src={comment.avatar} size="sm" radius="xl" />
+                                        <Avatar
+                                            src={comment.avatar}
+                                            size="sm"
+                                            radius="xl"
+                                        />
                                         <div>
                                             <Text size="sm" fw={500}>
                                                 {comment.author || 'Anonymous'}
@@ -161,12 +181,21 @@ export default function CommentsIndex({ comments, filters }: CommentsIndexProps)
                                     </Text>
                                 </Table.Td>
                                 <Table.Td>
-                                    <Text size="sm" c="dimmed" truncate maw={150}>
-                                        {comment.thread_title || comment.thread_uri}
+                                    <Text
+                                        size="sm"
+                                        c="dimmed"
+                                        truncate
+                                        maw={150}
+                                    >
+                                        {comment.thread_title ||
+                                            comment.thread_uri}
                                     </Text>
                                 </Table.Td>
                                 <Table.Td>
-                                    <Badge color={statusColors[comment.status]} variant="light">
+                                    <Badge
+                                        color={statusColors[comment.status]}
+                                        variant="light"
+                                    >
                                         {comment.status}
                                     </Badge>
                                 </Table.Td>
@@ -182,23 +211,45 @@ export default function CommentsIndex({ comments, filters }: CommentsIndexProps)
                                         </ActionIcon>
                                         <Menu shadow="md" width={150}>
                                             <Menu.Target>
-                                                <ActionIcon variant="subtle" size="sm">
-                                                    <IconDotsVertical size={16} />
+                                                <ActionIcon
+                                                    variant="subtle"
+                                                    size="sm"
+                                                >
+                                                    <IconDotsVertical
+                                                        size={16}
+                                                    />
                                                 </ActionIcon>
                                             </Menu.Target>
                                             <Menu.Dropdown>
-                                                {comment.status !== 'approved' && (
+                                                {comment.status !==
+                                                    'approved' && (
                                                     <Menu.Item
-                                                        leftSection={<IconCheck size={14} />}
-                                                        onClick={() => handleAction(comment.id, 'approve')}
+                                                        leftSection={
+                                                            <IconCheck
+                                                                size={14}
+                                                            />
+                                                        }
+                                                        onClick={() =>
+                                                            handleAction(
+                                                                comment.id,
+                                                                'approve',
+                                                            )
+                                                        }
                                                     >
                                                         Approve
                                                     </Menu.Item>
                                                 )}
                                                 {comment.status !== 'spam' && (
                                                     <Menu.Item
-                                                        leftSection={<IconX size={14} />}
-                                                        onClick={() => handleAction(comment.id, 'spam')}
+                                                        leftSection={
+                                                            <IconX size={14} />
+                                                        }
+                                                        onClick={() =>
+                                                            handleAction(
+                                                                comment.id,
+                                                                'spam',
+                                                            )
+                                                        }
                                                     >
                                                         Mark Spam
                                                     </Menu.Item>
@@ -206,8 +257,12 @@ export default function CommentsIndex({ comments, filters }: CommentsIndexProps)
                                                 <Menu.Divider />
                                                 <Menu.Item
                                                     color="red"
-                                                    leftSection={<IconTrash size={14} />}
-                                                    onClick={() => handleDelete(comment.id)}
+                                                    leftSection={
+                                                        <IconTrash size={14} />
+                                                    }
+                                                    onClick={() =>
+                                                        handleDelete(comment.id)
+                                                    }
                                                 >
                                                     Delete
                                                 </Menu.Item>
@@ -226,10 +281,14 @@ export default function CommentsIndex({ comments, filters }: CommentsIndexProps)
                             total={comments.meta.last_page}
                             value={comments.meta.current_page}
                             onChange={(page) => {
-                                router.get('/admin/comments', {
-                                    ...filters,
-                                    page,
-                                }, { preserveState: true });
+                                router.get(
+                                    '/admin/comments',
+                                    {
+                                        ...filters,
+                                        page,
+                                    },
+                                    { preserveState: true },
+                                );
                             }}
                         />
                     </Group>

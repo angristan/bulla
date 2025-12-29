@@ -1,33 +1,51 @@
 {
     "$schema": "https://biomejs.dev/schemas/1.9.0/schema.json",
+    "vcs": {
+        "enabled": true,
+        "clientKind": "git",
+        "useIgnoreFile": true
+    },
+    "files": {
+        "include": ["resources/js/**/*.ts", "resources/js/**/*.tsx"]
+    },
     "organizeImports": {
         "enabled": true
-    },
-    "linter": {
-        "enabled": true,
-        "rules": {
-            "recommended": true,
-            "complexity": {
-                "noUselessFragments": "warn"
-            },
-            "style": {
-                "noNonNullAssertion": "off"
-            }
-        }
     },
     "formatter": {
         "enabled": true,
         "indentStyle": "space",
         "indentWidth": 4
     },
+    "linter": {
+        "enabled": true,
+        "rules": {
+            "recommended": true,
+            "correctness": {
+                "useExhaustiveDependencies": "warn",
+                "useHookAtTopLevel": "error"
+            },
+            "suspicious": {
+                "noExplicitAny": "warn"
+            },
+            "style": {
+                "noUnusedTemplateLiteral": "off",
+                "noNonNullAssertion": "off"
+            },
+            "a11y": {
+                "useKeyWithClickEvents": "off",
+                "noLabelWithoutControl": "off",
+                "noSvgWithoutTitle": "off"
+            },
+            "security": {
+                "noDangerouslySetInnerHtml": "off"
+            }
+        }
+    },
     "javascript": {
         "formatter": {
             "quoteStyle": "single",
+            "jsxQuoteStyle": "double",
             "semicolons": "always"
         }
-    },
-    "files": {
-        "include": ["resources/js/**/*.ts", "resources/js/**/*.tsx"],
-        "ignore": ["node_modules", "vendor", "public"]
     }
 }

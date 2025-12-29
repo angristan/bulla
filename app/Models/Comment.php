@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -37,7 +38,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  */
 class Comment extends Model
 {
-    use SoftDeletes;
+    use HasFactory, SoftDeletes;
 
     public const STATUS_PENDING = 'pending';
 
@@ -65,6 +66,7 @@ class Comment extends Model
         'user_agent',
         'edit_token',
         'edit_token_expires_at',
+        'moderation_token',
     ];
 
     protected function casts(): array
@@ -129,5 +131,14 @@ class Comment extends Model
 
         return hash_equals($this->edit_token, $token)
             && $this->edit_token_expires_at->isFuture();
+    }
+
+    public function canModerate(string $token): bool
+    {
+        if ($this->moderation_token === null) {
+            return false;
+        }
+
+        return hash_equals($this->moderation_token, $token);
     }
 }

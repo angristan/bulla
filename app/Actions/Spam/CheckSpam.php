@@ -59,7 +59,7 @@ class CheckSpam
      */
     private function checkHoneypot(array $data): ?string
     {
-        if (isset($data['honeypot']) && $data['honeypot'] !== null && $data['honeypot'] !== '') {
+        if (isset($data['honeypot']) && $data['honeypot'] !== '') {
             return 'Invalid submission.';
         }
 

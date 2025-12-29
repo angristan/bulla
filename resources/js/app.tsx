@@ -4,11 +4,11 @@ import '@mantine/spotlight/styles.css';
 import '@mantine/dropzone/styles.css';
 import '@mantine/charts/styles.css';
 
-import { createRoot } from 'react-dom/client';
 import { createInertiaApp } from '@inertiajs/react';
 import { MantineProvider, createTheme } from '@mantine/core';
-import { Notifications } from '@mantine/notifications';
 import { ModalsProvider } from '@mantine/modals';
+import { Notifications } from '@mantine/notifications';
+import { createRoot } from 'react-dom/client';
 
 const theme = createTheme({
     primaryColor: 'blue',
@@ -29,7 +29,7 @@ createInertiaApp({
                     <Notifications position="top-right" />
                     <App {...props} />
                 </ModalsProvider>
-            </MantineProvider>
+            </MantineProvider>,
         );
     },
 });

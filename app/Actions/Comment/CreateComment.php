@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace App\Actions\Comment;
 
+use App\Actions\Email\SendModerationNotification;
+use App\Actions\Email\SendReplyNotification;
+use App\Actions\Email\SendVerificationEmail;
 use App\Actions\Thread\GetOrCreateThread;
 use App\Models\Comment;
 use App\Models\EmailVerification;
 use App\Models\Setting;
-use App\Models\Thread;
 use App\Support\IpAnonymizer;
 use App\Support\Markdown;
 use Illuminate\Support\Str;
@@ -45,7 +47,7 @@ class CreateComment
 
         // Check if email is pre-verified
         $emailVerified = false;
-        if (isset($data['email']) && $data['email'] !== null) {
+        if (isset($data['email'])) {
             $emailVerified = EmailVerification::isEmailVerified($data['email']);
         }
 
@@ -73,7 +75,33 @@ class CreateComment
             ),
         ]);
 
+        // Send emails (only if email sending is configured)
+        $this->sendEmails($comment, $emailVerified);
+
         return $comment;
+    }
+
+    private function sendEmails(Comment $comment, bool $alreadyVerified): void
+    {
+        // Only send emails if SMTP is configured
+        if (! Setting::getValue('smtp_host')) {
+            return;
+        }
+
+        // Send verification email if email provided and not already verified
+        if ($comment->email && ! $alreadyVerified) {
+            SendVerificationEmail::run($comment);
+        }
+
+        // Send moderation notification if comment is pending
+        if ($comment->isPending()) {
+            SendModerationNotification::run($comment);
+        }
+
+        // Send reply notification to parent comment author
+        if ($comment->parent_id) {
+            SendReplyNotification::run($comment);
+        }
     }
 
     /**

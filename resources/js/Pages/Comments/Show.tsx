@@ -1,29 +1,29 @@
+import AdminLayout from '@/Layouts/AdminLayout';
 import { Link, router } from '@inertiajs/react';
 import {
-    Title,
-    Paper,
-    Text,
-    Group,
-    Stack,
+    Anchor,
+    Avatar,
     Badge,
     Button,
-    Avatar,
-    Divider,
     Code,
-    Anchor,
+    Divider,
+    Group,
+    Paper,
+    Stack,
+    Text,
+    Title,
     TypographyStylesProvider,
 } from '@mantine/core';
 import {
-    IconCheck,
-    IconX,
-    IconTrash,
     IconArrowLeft,
-    IconMail,
-    IconWorld,
+    IconCheck,
     IconClock,
+    IconMail,
     IconThumbUp,
+    IconTrash,
+    IconWorld,
+    IconX,
 } from '@tabler/icons-react';
-import AdminLayout from '@/Layouts/AdminLayout';
 
 interface CommentShowProps {
     comment: {
@@ -63,9 +63,13 @@ const statusColors: Record<string, string> = {
 
 export default function CommentShow({ comment }: CommentShowProps) {
     const handleAction = (action: string) => {
-        router.post(`/admin/comments/${comment.id}/${action}`, {}, {
-            preserveState: true,
-        });
+        router.post(
+            `/admin/comments/${comment.id}/${action}`,
+            {},
+            {
+                preserveState: true,
+            },
+        );
     };
 
     const handleDelete = () => {
@@ -93,12 +97,18 @@ export default function CommentShow({ comment }: CommentShowProps) {
                         <Avatar src={comment.avatar} size="lg" radius="xl" />
                         <div>
                             <Group gap="xs">
-                                <Text fw={600}>{comment.author || 'Anonymous'}</Text>
+                                <Text fw={600}>
+                                    {comment.author || 'Anonymous'}
+                                </Text>
                                 {comment.email_verified && (
-                                    <Badge size="xs" color="green">Verified</Badge>
+                                    <Badge size="xs" color="green">
+                                        Verified
+                                    </Badge>
                                 )}
                                 {comment.is_admin && (
-                                    <Badge size="xs" color="blue">Admin</Badge>
+                                    <Badge size="xs" color="blue">
+                                        Admin
+                                    </Badge>
                                 )}
                             </Group>
                             <Text size="sm" c="dimmed">
@@ -114,7 +124,9 @@ export default function CommentShow({ comment }: CommentShowProps) {
                 <Divider my="md" />
 
                 <TypographyStylesProvider>
-                    <div dangerouslySetInnerHTML={{ __html: comment.body_html }} />
+                    <div
+                        dangerouslySetInnerHTML={{ __html: comment.body_html }}
+                    />
                 </TypographyStylesProvider>
 
                 <Divider my="md" />
@@ -124,20 +136,28 @@ export default function CommentShow({ comment }: CommentShowProps) {
                         {comment.email && (
                             <Group gap="xs">
                                 <IconMail size={16} color="gray" />
-                                <Text size="sm" c="dimmed">{comment.email}</Text>
+                                <Text size="sm" c="dimmed">
+                                    {comment.email}
+                                </Text>
                             </Group>
                         )}
                         {comment.website && (
                             <Group gap="xs">
                                 <IconWorld size={16} color="gray" />
-                                <Anchor href={comment.website} target="_blank" size="sm">
+                                <Anchor
+                                    href={comment.website}
+                                    target="_blank"
+                                    size="sm"
+                                >
                                     {comment.website}
                                 </Anchor>
                             </Group>
                         )}
                         <Group gap="xs">
                             <IconThumbUp size={16} color="gray" />
-                            <Text size="sm" c="dimmed">{comment.upvotes} upvotes</Text>
+                            <Text size="sm" c="dimmed">
+                                {comment.upvotes} upvotes
+                            </Text>
                         </Group>
                     </Group>
                     <Group>
@@ -174,40 +194,63 @@ export default function CommentShow({ comment }: CommentShowProps) {
             </Paper>
 
             <Paper withBorder p="md" radius="md" mb="lg">
-                <Title order={4} mb="md">Thread Info</Title>
+                <Title order={4} mb="md">
+                    Thread Info
+                </Title>
                 <Stack gap="xs">
                     <Group>
-                        <Text fw={500} size="sm" w={100}>URI:</Text>
+                        <Text fw={500} size="sm" w={100}>
+                            URI:
+                        </Text>
                         <Code>{comment.thread.uri}</Code>
                     </Group>
                     <Group>
-                        <Text fw={500} size="sm" w={100}>Title:</Text>
-                        <Text size="sm">{comment.thread.title || 'No title'}</Text>
+                        <Text fw={500} size="sm" w={100}>
+                            Title:
+                        </Text>
+                        <Text size="sm">
+                            {comment.thread.title || 'No title'}
+                        </Text>
                     </Group>
                     {comment.parent && (
                         <Group>
-                            <Text fw={500} size="sm" w={100}>Reply to:</Text>
-                            <Anchor component={Link} href={`/admin/comments/${comment.parent.id}`} size="sm">
-                                {comment.parent.author || 'Anonymous'} (#{comment.parent.id})
+                            <Text fw={500} size="sm" w={100}>
+                                Reply to:
+                            </Text>
+                            <Anchor
+                                component={Link}
+                                href={`/admin/comments/${comment.parent.id}`}
+                                size="sm"
+                            >
+                                {comment.parent.author || 'Anonymous'} (#
+                                {comment.parent.id})
                             </Anchor>
                         </Group>
                     )}
                     <Group>
-                        <Text fw={500} size="sm" w={100}>Replies:</Text>
+                        <Text fw={500} size="sm" w={100}>
+                            Replies:
+                        </Text>
                         <Text size="sm">{comment.replies_count}</Text>
                     </Group>
                 </Stack>
             </Paper>
 
             <Paper withBorder p="md" radius="md">
-                <Title order={4} mb="md">Metadata</Title>
+                <Title order={4} mb="md">
+                    Metadata
+                </Title>
                 <Stack gap="xs">
                     <Group>
-                        <Text fw={500} size="sm" w={100}>IP:</Text>
+                        <Text fw={500} size="sm" w={100}>
+                            IP:
+                        </Text>
                         <Code>{comment.remote_addr || 'Unknown'}</Code>
                     </Group>
                     <Group>
-                        <Text fw={500} size="sm" w={100}>User Agent:</Text>
+                        <Text fw={500} size="sm" w={100}>
+                            User Agent:
+                        </Text>
                         <Text size="sm" style={{ wordBreak: 'break-all' }}>
                             {comment.user_agent || 'Unknown'}
                         </Text>

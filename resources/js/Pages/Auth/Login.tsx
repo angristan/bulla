@@ -1,13 +1,13 @@
 import { useForm } from '@inertiajs/react';
 import {
+    Button,
+    Center,
     Container,
     Paper,
-    Title,
-    TextInput,
     PasswordInput,
-    Button,
     Stack,
-    Center,
+    TextInput,
+    Title,
 } from '@mantine/core';
 import type { FormEvent } from 'react';
 
@@ -35,7 +35,9 @@ export default function Login() {
                             label="Username"
                             placeholder="admin"
                             value={data.username}
-                            onChange={(e) => setData('username', e.target.value)}
+                            onChange={(e) =>
+                                setData('username', e.target.value)
+                            }
                             error={errors.username}
                             required
                         />
@@ -43,7 +45,9 @@ export default function Login() {
                             label="Password"
                             placeholder="Your password"
                             value={data.password}
-                            onChange={(e) => setData('password', e.target.value)}
+                            onChange={(e) =>
+                                setData('password', e.target.value)
+                            }
                             error={errors.password}
                             required
                         />

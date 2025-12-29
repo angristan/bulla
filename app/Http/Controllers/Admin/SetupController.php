@@ -28,7 +28,7 @@ class SetupController extends Controller
     {
         $validated = $request->validate([
             'site_name' => ['required', 'string', 'max:255'],
-            'site_url' => ['nullable', 'url', 'max:1024'],
+            'site_url' => ['required', 'url', 'max:1024'],
             'username' => ['required', 'string', 'min:3', 'max:50'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
         ]);
@@ -37,7 +37,7 @@ class SetupController extends Controller
             $validated['username'],
             $validated['password'],
             $validated['site_name'],
-            $validated['site_url'] ?? null
+            $validated['site_url']
         );
 
         // Auto-login after setup

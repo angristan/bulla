@@ -1,19 +1,19 @@
 import { useForm } from '@inertiajs/react';
 import {
-    Container,
-    Paper,
-    Title,
-    TextInput,
-    PasswordInput,
     Button,
-    Stack,
     Center,
-    Stepper,
-    Group,
-    Text,
     Code,
+    Container,
+    Group,
+    Paper,
+    PasswordInput,
+    Stack,
+    Stepper,
+    Text,
+    TextInput,
+    Title,
 } from '@mantine/core';
-import { useState, type FormEvent } from 'react';
+import { type FormEvent, useState } from 'react';
 
 export default function Setup() {
     const [active, setActive] = useState(0);
@@ -36,9 +36,13 @@ export default function Setup() {
     const canProceed = () => {
         switch (active) {
             case 0:
-                return data.site_name.length > 0;
+                return data.site_name.length > 0 && data.site_url.length > 0;
             case 1:
-                return data.username.length >= 3 && data.password.length >= 8 && data.password === data.password_confirmation;
+                return (
+                    data.username.length >= 3 &&
+                    data.password.length >= 8 &&
+                    data.password === data.password_confirmation
+                );
             default:
                 return true;
         }
@@ -53,33 +57,47 @@ export default function Setup() {
             <Paper withBorder shadow="md" p={30} radius="md">
                 <form onSubmit={handleSubmit}>
                     <Stepper active={active} mb="xl">
-                        <Stepper.Step label="Site Info" description="Configure your site">
+                        <Stepper.Step
+                            label="Site Info"
+                            description="Configure your site"
+                        >
                             <Stack mt="md">
                                 <TextInput
                                     label="Site Name"
                                     placeholder="My Blog"
                                     value={data.site_name}
-                                    onChange={(e) => setData('site_name', e.target.value)}
+                                    onChange={(e) =>
+                                        setData('site_name', e.target.value)
+                                    }
                                     error={errors.site_name}
                                     required
                                 />
                                 <TextInput
-                                    label="Site URL (optional)"
-                                    placeholder="https://myblog.com"
+                                    label="Site URL"
+                                    description="The URL where Opaska is hosted"
+                                    placeholder="https://comments.myblog.com"
                                     value={data.site_url}
-                                    onChange={(e) => setData('site_url', e.target.value)}
+                                    onChange={(e) =>
+                                        setData('site_url', e.target.value)
+                                    }
                                     error={errors.site_url}
+                                    required
                                 />
                             </Stack>
                         </Stepper.Step>
 
-                        <Stepper.Step label="Admin Account" description="Create admin credentials">
+                        <Stepper.Step
+                            label="Admin Account"
+                            description="Create admin credentials"
+                        >
                             <Stack mt="md">
                                 <TextInput
                                     label="Username"
                                     placeholder="admin"
                                     value={data.username}
-                                    onChange={(e) => setData('username', e.target.value)}
+                                    onChange={(e) =>
+                                        setData('username', e.target.value)
+                                    }
                                     error={errors.username}
                                     required
                                     minLength={3}
@@ -88,7 +106,9 @@ export default function Setup() {
                                     label="Password"
                                     placeholder="Min 8 characters"
                                     value={data.password}
-                                    onChange={(e) => setData('password', e.target.value)}
+                                    onChange={(e) =>
+                                        setData('password', e.target.value)
+                                    }
                                     error={errors.password}
                                     required
                                     minLength={8}
@@ -97,17 +117,33 @@ export default function Setup() {
                                     label="Confirm Password"
                                     placeholder="Repeat password"
                                     value={data.password_confirmation}
-                                    onChange={(e) => setData('password_confirmation', e.target.value)}
-                                    error={data.password !== data.password_confirmation ? 'Passwords do not match' : undefined}
+                                    onChange={(e) =>
+                                        setData(
+                                            'password_confirmation',
+                                            e.target.value,
+                                        )
+                                    }
+                                    error={
+                                        data.password !==
+                                        data.password_confirmation
+                                            ? 'Passwords do not match'
+                                            : undefined
+                                    }
                                     required
                                 />
                             </Stack>
                         </Stepper.Step>
 
-                        <Stepper.Step label="Complete" description="Finish setup">
+                        <Stepper.Step
+                            label="Complete"
+                            description="Finish setup"
+                        >
                             <Stack mt="md" align="center">
                                 <Text size="lg">You&apos;re all set!</Text>
-                                <Text c="dimmed">Click Complete to finish setup and access your dashboard.</Text>
+                                <Text c="dimmed">
+                                    Click Complete to finish setup and access
+                                    your dashboard.
+                                </Text>
                             </Stack>
                         </Stepper.Step>
                     </Stepper>

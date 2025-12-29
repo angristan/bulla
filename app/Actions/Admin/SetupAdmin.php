@@ -19,15 +19,12 @@ class SetupAdmin
         string $username,
         string $password,
         string $siteName,
-        ?string $siteUrl = null
+        string $siteUrl
     ): void {
         Setting::setValue('admin_username', $username);
         Setting::setValue('admin_password', Hash::make($password));
         Setting::setValue('site_name', $siteName);
-
-        if ($siteUrl !== null) {
-            Setting::setValue('site_url', $siteUrl);
-        }
+        Setting::setValue('site_url', $siteUrl);
 
         // Set default settings
         Setting::setValue('moderation_mode', 'none');

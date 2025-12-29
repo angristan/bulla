@@ -79,7 +79,7 @@ class Setting extends Model
      */
     public static function setValue(string $key, ?string $value, bool $encrypted = false): void
     {
-        $setting = static::find($key) ?? new static(['key' => $key]);
+        $setting = static::find($key) ?? new self(['key' => $key]);
 
         if ($value === null) {
             $setting->delete();

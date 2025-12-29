@@ -9,7 +9,7 @@ use App\Models\Thread;
 uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
 
 beforeEach(function (): void {
-    SetupAdmin::run('admin', 'password123', 'Test Site');
+    SetupAdmin::run('admin', 'password123', 'Test Site', 'https://example.com');
 
     $this->post('/admin/login', [
         'username' => 'admin',

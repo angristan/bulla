@@ -1,30 +1,30 @@
+import AdminLayout from '@/Layouts/AdminLayout';
 import { useForm } from '@inertiajs/react';
 import {
-    Title,
-    Paper,
-    Text,
+    Alert,
+    Button,
     Group,
+    NumberInput,
+    Paper,
+    PasswordInput,
+    Select,
     Stack,
+    Switch,
+    Tabs,
+    Text,
     TextInput,
     Textarea,
-    NumberInput,
-    Switch,
-    Button,
-    Tabs,
-    Select,
-    PasswordInput,
-    Alert,
+    Title,
 } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import {
-    IconSettings,
-    IconShield,
+    IconCheck,
     IconMail,
     IconPalette,
-    IconCheck,
+    IconSettings,
+    IconShield,
 } from '@tabler/icons-react';
 import type { FormEvent } from 'react';
-import AdminLayout from '@/Layouts/AdminLayout';
 
 interface SettingsIndexProps {
     settings: {
@@ -91,21 +91,35 @@ export default function SettingsIndex({ settings }: SettingsIndexProps) {
 
     return (
         <AdminLayout>
-            <Title order={2} mb="lg">Settings</Title>
+            <Title order={2} mb="lg">
+                Settings
+            </Title>
 
             <form onSubmit={handleSubmit}>
                 <Tabs defaultValue="general">
                     <Tabs.List mb="lg">
-                        <Tabs.Tab value="general" leftSection={<IconSettings size={16} />}>
+                        <Tabs.Tab
+                            value="general"
+                            leftSection={<IconSettings size={16} />}
+                        >
                             General
                         </Tabs.Tab>
-                        <Tabs.Tab value="moderation" leftSection={<IconShield size={16} />}>
+                        <Tabs.Tab
+                            value="moderation"
+                            leftSection={<IconShield size={16} />}
+                        >
                             Moderation
                         </Tabs.Tab>
-                        <Tabs.Tab value="email" leftSection={<IconMail size={16} />}>
+                        <Tabs.Tab
+                            value="email"
+                            leftSection={<IconMail size={16} />}
+                        >
                             Email
                         </Tabs.Tab>
-                        <Tabs.Tab value="appearance" leftSection={<IconPalette size={16} />}>
+                        <Tabs.Tab
+                            value="appearance"
+                            leftSection={<IconPalette size={16} />}
+                        >
                             Appearance
                         </Tabs.Tab>
                     </Tabs.List>
@@ -117,19 +131,28 @@ export default function SettingsIndex({ settings }: SettingsIndexProps) {
                                     label="Site Name"
                                     description="The name of your site"
                                     value={data.site_name}
-                                    onChange={(e) => setData('site_name', e.target.value)}
+                                    onChange={(e) =>
+                                        setData('site_name', e.target.value)
+                                    }
                                 />
                                 <TextInput
                                     label="Site URL"
                                     description="The URL of your site (used for links in emails)"
                                     value={data.site_url}
-                                    onChange={(e) => setData('site_url', e.target.value)}
+                                    onChange={(e) =>
+                                        setData('site_url', e.target.value)
+                                    }
                                 />
                                 <TextInput
                                     label="Allowed Origins"
                                     description="Comma-separated list of domains allowed to embed comments (* for all)"
                                     value={data.allowed_origins}
-                                    onChange={(e) => setData('allowed_origins', e.target.value)}
+                                    onChange={(e) =>
+                                        setData(
+                                            'allowed_origins',
+                                            e.target.value,
+                                        )
+                                    }
                                 />
                             </Stack>
                         </Paper>
@@ -142,28 +165,54 @@ export default function SettingsIndex({ settings }: SettingsIndexProps) {
                                     label="Moderation Mode"
                                     description="When to require manual approval"
                                     data={[
-                                        { value: 'none', label: 'None - All comments auto-approved' },
-                                        { value: 'unverified', label: 'Unverified - Only unverified emails need approval' },
-                                        { value: 'all', label: 'All - All comments need approval' },
+                                        {
+                                            value: 'none',
+                                            label: 'None - All comments auto-approved',
+                                        },
+                                        {
+                                            value: 'unverified',
+                                            label: 'Unverified - Only unverified emails need approval',
+                                        },
+                                        {
+                                            value: 'all',
+                                            label: 'All - All comments need approval',
+                                        },
                                     ]}
                                     value={data.moderation_mode}
-                                    onChange={(value) => setData('moderation_mode', value || 'none')}
+                                    onChange={(value) =>
+                                        setData(
+                                            'moderation_mode',
+                                            value || 'none',
+                                        )
+                                    }
                                 />
                                 <Switch
                                     label="Require author name"
                                     checked={data.require_author}
-                                    onChange={(e) => setData('require_author', e.target.checked)}
+                                    onChange={(e) =>
+                                        setData(
+                                            'require_author',
+                                            e.target.checked,
+                                        )
+                                    }
                                 />
                                 <Switch
                                     label="Require email"
                                     checked={data.require_email}
-                                    onChange={(e) => setData('require_email', e.target.checked)}
+                                    onChange={(e) =>
+                                        setData(
+                                            'require_email',
+                                            e.target.checked,
+                                        )
+                                    }
                                 />
                                 <NumberInput
                                     label="Max reply depth"
                                     description="Maximum nesting level for replies"
                                     value={data.max_depth}
-                                    onChange={(value) => setData('max_depth', Number(value))}
+                                    onChange={(value) =>
+                                        setData('max_depth', Number(value))
+                                    }
                                     min={1}
                                     max={10}
                                 />
@@ -171,14 +220,24 @@ export default function SettingsIndex({ settings }: SettingsIndexProps) {
                                     label="Edit window (minutes)"
                                     description="How long users can edit their comments"
                                     value={data.edit_window_minutes}
-                                    onChange={(value) => setData('edit_window_minutes', Number(value))}
+                                    onChange={(value) =>
+                                        setData(
+                                            'edit_window_minutes',
+                                            Number(value),
+                                        )
+                                    }
                                     min={0}
                                     max={1440}
                                 />
                                 <NumberInput
                                     label="Rate limit (comments per minute)"
                                     value={data.rate_limit_per_minute}
-                                    onChange={(value) => setData('rate_limit_per_minute', Number(value))}
+                                    onChange={(value) =>
+                                        setData(
+                                            'rate_limit_per_minute',
+                                            Number(value),
+                                        )
+                                    }
                                     min={1}
                                     max={100}
                                 />
@@ -186,14 +245,21 @@ export default function SettingsIndex({ settings }: SettingsIndexProps) {
                                     label="Minimum submission time (seconds)"
                                     description="Reject comments submitted faster than this"
                                     value={data.spam_min_time_seconds}
-                                    onChange={(value) => setData('spam_min_time_seconds', Number(value))}
+                                    onChange={(value) =>
+                                        setData(
+                                            'spam_min_time_seconds',
+                                            Number(value),
+                                        )
+                                    }
                                     min={0}
                                     max={60}
                                 />
                                 <NumberInput
                                     label="Maximum links per comment"
                                     value={data.max_links}
-                                    onChange={(value) => setData('max_links', Number(value))}
+                                    onChange={(value) =>
+                                        setData('max_links', Number(value))
+                                    }
                                     min={0}
                                     max={50}
                                 />
@@ -201,14 +267,18 @@ export default function SettingsIndex({ settings }: SettingsIndexProps) {
                                     label="Blocked words"
                                     description="One word/phrase per line"
                                     value={data.blocked_words}
-                                    onChange={(e) => setData('blocked_words', e.target.value)}
+                                    onChange={(e) =>
+                                        setData('blocked_words', e.target.value)
+                                    }
                                     minRows={4}
                                 />
                                 <Textarea
                                     label="Blocked IPs"
                                     description="One IP per line"
                                     value={data.blocked_ips}
-                                    onChange={(e) => setData('blocked_ips', e.target.value)}
+                                    onChange={(e) =>
+                                        setData('blocked_ips', e.target.value)
+                                    }
                                     minRows={4}
                                 />
                             </Stack>
@@ -220,39 +290,62 @@ export default function SettingsIndex({ settings }: SettingsIndexProps) {
                             <Stack>
                                 {settings.smtp_configured && (
                                     <Alert color="green">
-                                        SMTP is configured. Leave password empty to keep existing.
+                                        SMTP is configured. Leave password empty
+                                        to keep existing.
                                     </Alert>
                                 )}
                                 <TextInput
                                     label="SMTP Host"
                                     value={data.smtp_host}
-                                    onChange={(e) => setData('smtp_host', e.target.value)}
+                                    onChange={(e) =>
+                                        setData('smtp_host', e.target.value)
+                                    }
                                 />
                                 <TextInput
                                     label="SMTP Port"
                                     value={data.smtp_port}
-                                    onChange={(e) => setData('smtp_port', e.target.value)}
+                                    onChange={(e) =>
+                                        setData('smtp_port', e.target.value)
+                                    }
                                 />
                                 <TextInput
                                     label="SMTP Username"
                                     value={data.smtp_username}
-                                    onChange={(e) => setData('smtp_username', e.target.value)}
+                                    onChange={(e) =>
+                                        setData('smtp_username', e.target.value)
+                                    }
                                 />
                                 <PasswordInput
                                     label="SMTP Password"
                                     value={data.smtp_password}
-                                    onChange={(e) => setData('smtp_password', e.target.value)}
-                                    placeholder={settings.smtp_configured ? '••••••••' : ''}
+                                    onChange={(e) =>
+                                        setData('smtp_password', e.target.value)
+                                    }
+                                    placeholder={
+                                        settings.smtp_configured
+                                            ? '••••••••'
+                                            : ''
+                                    }
                                 />
                                 <TextInput
                                     label="From Address"
                                     value={data.smtp_from_address}
-                                    onChange={(e) => setData('smtp_from_address', e.target.value)}
+                                    onChange={(e) =>
+                                        setData(
+                                            'smtp_from_address',
+                                            e.target.value,
+                                        )
+                                    }
                                 />
                                 <TextInput
                                     label="From Name"
                                     value={data.smtp_from_name}
-                                    onChange={(e) => setData('smtp_from_name', e.target.value)}
+                                    onChange={(e) =>
+                                        setData(
+                                            'smtp_from_name',
+                                            e.target.value,
+                                        )
+                                    }
                                 />
                             </Stack>
                         </Paper>
@@ -265,9 +358,13 @@ export default function SettingsIndex({ settings }: SettingsIndexProps) {
                                     label="Custom CSS"
                                     description="CSS to inject into the embed widget"
                                     value={data.custom_css}
-                                    onChange={(e) => setData('custom_css', e.target.value)}
+                                    onChange={(e) =>
+                                        setData('custom_css', e.target.value)
+                                    }
                                     minRows={10}
-                                    styles={{ input: { fontFamily: 'monospace' } }}
+                                    styles={{
+                                        input: { fontFamily: 'monospace' },
+                                    }}
                                 />
                             </Stack>
                         </Paper>

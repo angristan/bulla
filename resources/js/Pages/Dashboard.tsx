@@ -1,20 +1,20 @@
+import AdminLayout from '@/Layouts/AdminLayout';
 import { Link } from '@inertiajs/react';
+import { AreaChart } from '@mantine/charts';
 import {
-    Title,
-    Grid,
-    Paper,
-    Text,
-    Group,
-    Table,
+    ActionIcon,
     Badge,
+    Button,
     Code,
     CopyButton,
-    Button,
-    ActionIcon,
+    Grid,
+    Group,
+    Paper,
+    Table,
+    Text,
+    Title,
 } from '@mantine/core';
-import { AreaChart } from '@mantine/charts';
-import { IconCopy, IconCheck, IconEye } from '@tabler/icons-react';
-import AdminLayout from '@/Layouts/AdminLayout';
+import { IconCheck, IconCopy, IconEye } from '@tabler/icons-react';
 
 interface Comment {
     id: number;
@@ -47,37 +47,59 @@ const statusColors: Record<string, string> = {
     deleted: 'gray',
 };
 
-export default function Dashboard({ stats, siteName, siteUrl }: DashboardProps) {
+export default function Dashboard({
+    stats,
+    siteName,
+    siteUrl,
+}: DashboardProps) {
     const embedCode = `<script src="${siteUrl || window.location.origin}/embed.js" data-opaska="${siteUrl || window.location.origin}" async></script>
 <div id="opaska-thread"></div>`;
 
     return (
         <AdminLayout>
-            <Title order={2} mb="lg">Dashboard</Title>
+            <Title order={2} mb="lg">
+                Dashboard
+            </Title>
 
             <Grid mb="lg">
                 <Grid.Col span={{ base: 6, md: 3 }}>
                     <Paper withBorder p="md" radius="md">
-                        <Text size="xs" c="dimmed" tt="uppercase" fw={700}>Total Comments</Text>
-                        <Text size="xl" fw={700}>{stats.total_comments}</Text>
+                        <Text size="xs" c="dimmed" tt="uppercase" fw={700}>
+                            Total Comments
+                        </Text>
+                        <Text size="xl" fw={700}>
+                            {stats.total_comments}
+                        </Text>
                     </Paper>
                 </Grid.Col>
                 <Grid.Col span={{ base: 6, md: 3 }}>
                     <Paper withBorder p="md" radius="md">
-                        <Text size="xs" c="dimmed" tt="uppercase" fw={700}>Pending</Text>
-                        <Text size="xl" fw={700} c="yellow">{stats.pending_comments}</Text>
+                        <Text size="xs" c="dimmed" tt="uppercase" fw={700}>
+                            Pending
+                        </Text>
+                        <Text size="xl" fw={700} c="yellow">
+                            {stats.pending_comments}
+                        </Text>
                     </Paper>
                 </Grid.Col>
                 <Grid.Col span={{ base: 6, md: 3 }}>
                     <Paper withBorder p="md" radius="md">
-                        <Text size="xs" c="dimmed" tt="uppercase" fw={700}>Approved</Text>
-                        <Text size="xl" fw={700} c="green">{stats.approved_comments}</Text>
+                        <Text size="xs" c="dimmed" tt="uppercase" fw={700}>
+                            Approved
+                        </Text>
+                        <Text size="xl" fw={700} c="green">
+                            {stats.approved_comments}
+                        </Text>
                     </Paper>
                 </Grid.Col>
                 <Grid.Col span={{ base: 6, md: 3 }}>
                     <Paper withBorder p="md" radius="md">
-                        <Text size="xs" c="dimmed" tt="uppercase" fw={700}>Spam</Text>
-                        <Text size="xl" fw={700} c="red">{stats.spam_comments}</Text>
+                        <Text size="xs" c="dimmed" tt="uppercase" fw={700}>
+                            Spam
+                        </Text>
+                        <Text size="xl" fw={700} c="red">
+                            {stats.spam_comments}
+                        </Text>
                     </Paper>
                 </Grid.Col>
             </Grid>
@@ -85,7 +107,9 @@ export default function Dashboard({ stats, siteName, siteUrl }: DashboardProps) 
             <Grid>
                 <Grid.Col span={{ base: 12, md: 8 }}>
                     <Paper withBorder p="md" radius="md" mb="lg">
-                        <Text size="sm" fw={500} mb="md">Comments This Week</Text>
+                        <Text size="sm" fw={500} mb="md">
+                            Comments This Week
+                        </Text>
                         <AreaChart
                             h={200}
                             data={stats.comments_this_week}
@@ -97,7 +121,9 @@ export default function Dashboard({ stats, siteName, siteUrl }: DashboardProps) 
 
                     <Paper withBorder p="md" radius="md">
                         <Group justify="space-between" mb="md">
-                            <Text size="sm" fw={500}>Recent Comments</Text>
+                            <Text size="sm" fw={500}>
+                                Recent Comments
+                            </Text>
                             <Button
                                 component={Link}
                                 href="/admin/comments"
@@ -119,14 +145,21 @@ export default function Dashboard({ stats, siteName, siteUrl }: DashboardProps) 
                             <Table.Tbody>
                                 {stats.recent_comments.map((comment) => (
                                     <Table.Tr key={comment.id}>
-                                        <Table.Td>{comment.author || 'Anonymous'}</Table.Td>
+                                        <Table.Td>
+                                            {comment.author || 'Anonymous'}
+                                        </Table.Td>
                                         <Table.Td maw={300}>
                                             <Text size="sm" truncate>
                                                 {comment.body_excerpt}
                                             </Text>
                                         </Table.Td>
                                         <Table.Td>
-                                            <Badge color={statusColors[comment.status]} variant="light">
+                                            <Badge
+                                                color={
+                                                    statusColors[comment.status]
+                                                }
+                                                variant="light"
+                                            >
                                                 {comment.status}
                                             </Badge>
                                         </Table.Td>
@@ -149,11 +182,17 @@ export default function Dashboard({ stats, siteName, siteUrl }: DashboardProps) 
 
                 <Grid.Col span={{ base: 12, md: 4 }}>
                     <Paper withBorder p="md" radius="md">
-                        <Text size="sm" fw={500} mb="md">Embed Code</Text>
-                        <Text size="xs" c="dimmed" mb="sm">
-                            Add this code to your website where you want comments to appear:
+                        <Text size="sm" fw={500} mb="md">
+                            Embed Code
                         </Text>
-                        <Code block style={{ fontSize: '11px', whiteSpace: 'pre-wrap' }}>
+                        <Text size="xs" c="dimmed" mb="sm">
+                            Add this code to your website where you want
+                            comments to appear:
+                        </Text>
+                        <Code
+                            block
+                            style={{ fontSize: '11px', whiteSpace: 'pre-wrap' }}
+                        >
                             {embedCode}
                         </Code>
                         <CopyButton value={embedCode}>
@@ -163,7 +202,13 @@ export default function Dashboard({ stats, siteName, siteUrl }: DashboardProps) 
                                     mt="sm"
                                     variant="light"
                                     onClick={copy}
-                                    leftSection={copied ? <IconCheck size={16} /> : <IconCopy size={16} />}
+                                    leftSection={
+                                        copied ? (
+                                            <IconCheck size={16} />
+                                        ) : (
+                                            <IconCopy size={16} />
+                                        )
+                                    }
                                 >
                                     {copied ? 'Copied!' : 'Copy Code'}
                                 </Button>

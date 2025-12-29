@@ -1,21 +1,23 @@
 import { Link, usePage } from '@inertiajs/react';
 import {
+    ActionIcon,
     AppShell,
     Burger,
     Group,
     NavLink,
     Title,
-    ActionIcon,
     useMantineColorScheme,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import {
     IconDashboard,
-    IconMessages,
-    IconSettings,
+    IconDatabaseImport,
+    IconEye,
     IconLogout,
-    IconSun,
+    IconMessages,
     IconMoon,
+    IconSettings,
+    IconSun,
 } from '@tabler/icons-react';
 import type { ReactNode } from 'react';
 
@@ -32,18 +34,33 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         { label: 'Dashboard', href: '/admin', icon: IconDashboard },
         { label: 'Comments', href: '/admin/comments', icon: IconMessages },
         { label: 'Settings', href: '/admin/settings', icon: IconSettings },
+        { label: 'Import', href: '/admin/import', icon: IconDatabaseImport },
+        { label: 'Preview', href: '/admin/preview', icon: IconEye },
     ];
+
+    const navLinkStyles = {
+        root: { borderRadius: 'var(--mantine-radius-md)' },
+    };
 
     return (
         <AppShell
             header={{ height: 60 }}
-            navbar={{ width: 250, breakpoint: 'sm', collapsed: { mobile: !opened } }}
+            navbar={{
+                width: 250,
+                breakpoint: 'sm',
+                collapsed: { mobile: !opened },
+            }}
             padding="md"
         >
             <AppShell.Header>
                 <Group h="100%" px="md" justify="space-between">
                     <Group>
-                        <Burger opened={opened} onClick={toggle} hiddenFrom="sm" size="sm" />
+                        <Burger
+                            opened={opened}
+                            onClick={toggle}
+                            hiddenFrom="sm"
+                            size="sm"
+                        />
                         <Title order={3}>Opaska</Title>
                     </Group>
                     <Group>
@@ -52,7 +69,11 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                             onClick={() => toggleColorScheme()}
                             aria-label="Toggle color scheme"
                         >
-                            {colorScheme === 'dark' ? <IconSun size={20} /> : <IconMoon size={20} />}
+                            {colorScheme === 'dark' ? (
+                                <IconSun size={20} />
+                            ) : (
+                                <IconMoon size={20} />
+                            )}
                         </ActionIcon>
                     </Group>
                 </Group>
@@ -66,8 +87,13 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                         href={item.href}
                         label={item.label}
                         leftSection={<item.icon size={20} />}
-                        active={url === item.href || (item.href !== '/admin' && url.startsWith(item.href))}
+                        active={
+                            url === item.href ||
+                            (item.href !== '/admin' &&
+                                url.startsWith(item.href))
+                        }
                         mb="xs"
+                        styles={navLinkStyles}
                     />
                 ))}
                 <NavLink
@@ -78,6 +104,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                     label="Logout"
                     leftSection={<IconLogout size={20} />}
                     mt="auto"
+                    styles={navLinkStyles}
                 />
             </AppShell.Navbar>
 

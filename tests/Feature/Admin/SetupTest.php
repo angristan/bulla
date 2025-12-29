@@ -48,12 +48,13 @@ describe('Admin Setup', function (): void {
     it('requires all fields', function (): void {
         $response = $this->post('/admin/setup', []);
 
-        $response->assertSessionHasErrors(['site_name', 'username', 'password']);
+        $response->assertSessionHasErrors(['site_name', 'site_url', 'username', 'password']);
     });
 
     it('validates password confirmation', function (): void {
         $response = $this->post('/admin/setup', [
             'site_name' => 'My Blog',
+            'site_url' => 'https://myblog.com',
             'username' => 'admin',
             'password' => 'password123',
             'password_confirmation' => 'different',
@@ -65,6 +66,7 @@ describe('Admin Setup', function (): void {
     it('validates minimum password length', function (): void {
         $response = $this->post('/admin/setup', [
             'site_name' => 'My Blog',
+            'site_url' => 'https://myblog.com',
             'username' => 'admin',
             'password' => 'short',
             'password_confirmation' => 'short',
@@ -84,6 +86,7 @@ describe('Admin Setup', function (): void {
     it('auto-logs in after setup', function (): void {
         $this->post('/admin/setup', [
             'site_name' => 'My Blog',
+            'site_url' => 'https://myblog.com',
             'username' => 'admin',
             'password' => 'password123',
             'password_confirmation' => 'password123',

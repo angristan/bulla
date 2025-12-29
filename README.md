@@ -1,59 +1,128 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Opaska
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A self-hosted comment system for static sites and blogs. Modern replacement for isso.
 
-## About Laravel
+## Features
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- **Simple embedding** - Single script tag to add comments
+- **Markdown support** - Comments support GitHub-flavored markdown
+- **Nested replies** - Configurable nesting depth
+- **Dark mode** - Light, dark, or auto (follows system preference)
+- **Email notifications** - Notify authors when they receive replies
+- **Email verification** - Verified badge for confirmed emails
+- **Upvoting** - Anonymous upvotes with duplicate prevention
+- **Moderation** - Approve, spam, delete from admin panel or email
+- **Spam protection** - Honeypot, rate limiting, blocked words (no 3rd party)
+- **Import from isso** - Migrate your existing comments
+- **Atom feeds** - Subscribe to comment threads
+- **Dual database support** - SQLite (default) or PostgreSQL
+- **Lightweight embed** - ~9KB gzipped
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Quick Start
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### Docker (Recommended)
 
-## Learning Laravel
+```bash
+docker run -d \
+  -p 8000:8000 \
+  -v opaska_data:/app/database \
+  -e APP_URL=https://comments.example.com \
+  ghcr.io/your-username/opaska:latest
+```
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+Then visit `http://localhost:8000/admin/setup` to configure.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### Embedding
 
-## Laravel Sponsors
+Add to your website:
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+```html
+<script
+  src="https://comments.example.com/embed/embed.js"
+  data-opaska="https://comments.example.com"
+  async
+></script>
+<div id="opaska-thread"></div>
+```
 
-### Premium Partners
+## Documentation
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+- [Self-Hosting Guide](docs/self-hosting.md)
+- [Embedding Guide](docs/embedding.md)
+- [API Reference](docs/api.md)
 
-## Contributing
+## Tech Stack
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+- **Backend:** Laravel 12, PHP 8.3+
+- **Admin Panel:** React, Inertia.js, Mantine
+- **Embed Widget:** Preact, CSS
+- **Database:** SQLite (default) or PostgreSQL
+- **Deployment:** Docker with FrankenPHP
 
-## Code of Conduct
+## Development
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+```bash
+# Clone repository
+git clone https://github.com/your-username/opaska
+cd opaska
 
-## Security Vulnerabilities
+# Install dependencies
+composer install
+npm install
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+# Set up environment
+cp .env.example .env
+php artisan key:generate
+
+# Run migrations
+php artisan migrate
+
+# Build assets
+npm run dev
+
+# Build embed widget
+cd embed && npm install && npm run build && cd ..
+
+# Run tests
+php artisan test
+
+# Start development server
+php artisan serve
+```
+
+## Testing
+
+```bash
+# Run all tests
+php artisan test
+
+# Run specific test suite
+php artisan test tests/Feature/Comment
+
+# With coverage
+php artisan test --coverage
+```
+
+Tests run against both SQLite and PostgreSQL in CI.
+
+## Migrating from isso
+
+1. Export your isso database file
+2. Go to Admin > Import
+3. Upload the isso SQLite file
+4. Comments will be imported with original timestamps
+
+## Configuration
+
+All configuration is done through the admin panel after initial setup. Key settings:
+
+- **Moderation mode:** None, unverified only, or all comments
+- **Edit window:** How long users can edit their comments
+- **Max nesting depth:** How deep replies can nest
+- **Rate limiting:** Comments per minute per IP
+- **Blocked words:** Spam keyword list
+- **SMTP:** Email notification settings
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+MIT
