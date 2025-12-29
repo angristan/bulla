@@ -2,19 +2,28 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\Api\CommentController;
+use App\Http\Controllers\Api\ConfigController;
+use App\Http\Controllers\Api\ThreadController;
 use Illuminate\Support\Facades\Route;
 
-// Public API routes for embed widget
-Route::prefix('threads/{uri}')->group(function (): void {
-    // Route::get('comments', GetThreadComments::class);
-    // Route::post('comments', CreateComment::class);
+// Client config
+Route::get('config', ConfigController::class);
+
+// Comment counts (batch)
+Route::post('counts', [ThreadController::class, 'counts']);
+
+// Thread comments
+Route::prefix('threads/{uri}')->where(['uri' => '.*'])->group(function (): void {
+    Route::get('comments', [ThreadController::class, 'comments']);
+    Route::post('comments', [CommentController::class, 'store']);
 });
 
-// Route::get('comments/{comment}', GetComment::class);
-// Route::put('comments/{comment}', UpdateComment::class);
-// Route::delete('comments/{comment}', DeleteComment::class);
-// Route::post('comments/{comment}/upvote', UpvoteComment::class);
-
-// Route::post('comments/preview', PreviewMarkdown::class);
-// Route::get('config', GetClientConfig::class);
-// Route::post('counts', GetCommentCounts::class);
+// Single comment operations
+Route::prefix('comments')->group(function (): void {
+    Route::post('preview', [CommentController::class, 'preview']);
+    Route::get('{comment}', [CommentController::class, 'show']);
+    Route::put('{comment}', [CommentController::class, 'update']);
+    Route::delete('{comment}', [CommentController::class, 'destroy']);
+    Route::post('{comment}/upvote', [CommentController::class, 'upvote']);
+});
