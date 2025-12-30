@@ -29,6 +29,8 @@ class CommentsController extends Controller
             'search' => $request->get('search'),
             'thread_id' => $request->get('thread_id'),
             'per_page' => (int) $request->get('per_page', 20),
+            'sort_by' => $request->get('sort_by', 'created_at'),
+            'sort_dir' => $request->get('sort_dir', 'desc'),
         ];
 
         $comments = ListComments::run($filters);

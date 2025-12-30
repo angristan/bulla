@@ -17,9 +17,12 @@ import {
 import { useDebouncedValue } from '@mantine/hooks';
 import {
     IconCheck,
+    IconChevronDown,
+    IconChevronUp,
     IconDotsVertical,
     IconEye,
     IconSearch,
+    IconSelector,
     IconTrash,
     IconX,
 } from '@tabler/icons-react';
@@ -54,6 +57,8 @@ interface CommentsIndexProps {
     filters: {
         status: string;
         search: string | null;
+        sort_by: string;
+        sort_dir: string;
     };
 }
 
@@ -79,6 +84,8 @@ export default function CommentsIndex({
                 {
                     status: filters.status,
                     search: debouncedSearch || undefined,
+                    sort_by: filters.sort_by,
+                    sort_dir: filters.sort_dir,
                 },
                 { preserveState: true },
             );
@@ -91,8 +98,38 @@ export default function CommentsIndex({
             {
                 status,
                 search: search || undefined,
+                sort_by: filters.sort_by,
+                sort_dir: filters.sort_dir,
             },
             { preserveState: true },
+        );
+    };
+
+    const handleSort = (column: string) => {
+        const newDir =
+            filters.sort_by === column && filters.sort_dir === 'asc'
+                ? 'desc'
+                : 'asc';
+        router.get(
+            '/admin/comments',
+            {
+                status: filters.status,
+                search: search || undefined,
+                sort_by: column,
+                sort_dir: newDir,
+            },
+            { preserveState: true },
+        );
+    };
+
+    const SortIcon = ({ column }: { column: string }) => {
+        if (filters.sort_by !== column) {
+            return <IconSelector size={14} style={{ opacity: 0.5 }} />;
+        }
+        return filters.sort_dir === 'asc' ? (
+            <IconChevronUp size={14} />
+        ) : (
+            <IconChevronDown size={14} />
         );
     };
 
@@ -148,10 +185,35 @@ export default function CommentsIndex({
                 <Table>
                     <Table.Thead>
                         <Table.Tr>
-                            <Table.Th>Author</Table.Th>
+                            <Table.Th
+                                style={{ cursor: 'pointer' }}
+                                onClick={() => handleSort('author')}
+                            >
+                                <Group gap={4}>
+                                    Author
+                                    <SortIcon column="author" />
+                                </Group>
+                            </Table.Th>
                             <Table.Th>Comment</Table.Th>
                             <Table.Th>Thread</Table.Th>
-                            <Table.Th>Status</Table.Th>
+                            <Table.Th
+                                style={{ cursor: 'pointer' }}
+                                onClick={() => handleSort('status')}
+                            >
+                                <Group gap={4}>
+                                    Status
+                                    <SortIcon column="status" />
+                                </Group>
+                            </Table.Th>
+                            <Table.Th
+                                style={{ cursor: 'pointer' }}
+                                onClick={() => handleSort('created_at')}
+                            >
+                                <Group gap={4}>
+                                    Date
+                                    <SortIcon column="created_at" />
+                                </Group>
+                            </Table.Th>
                             <Table.Th>Actions</Table.Th>
                         </Table.Tr>
                     </Table.Thead>
@@ -198,6 +260,13 @@ export default function CommentsIndex({
                                     >
                                         {comment.status}
                                     </Badge>
+                                </Table.Td>
+                                <Table.Td>
+                                    <Text size="sm" c="dimmed">
+                                        {new Date(
+                                            comment.created_at,
+                                        ).toLocaleDateString()}
+                                    </Text>
                                 </Table.Td>
                                 <Table.Td>
                                     <Group gap="xs">

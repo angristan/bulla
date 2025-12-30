@@ -22,13 +22,25 @@ class ListComments
      *     search?: string|null,
      *     thread_id?: int|null,
      *     per_page?: int,
+     *     sort_by?: string,
+     *     sort_dir?: string,
      * }  $filters
      * @return array<string, mixed>
      */
     public function handle(array $filters = []): array
     {
+        $sortBy = $filters['sort_by'] ?? 'created_at';
+        $sortDir = $filters['sort_dir'] ?? 'desc';
+
+        $allowedSortFields = ['created_at', 'author', 'status', 'upvotes'];
+        if (! in_array($sortBy, $allowedSortFields, true)) {
+            $sortBy = 'created_at';
+        }
+
+        $sortDir = strtolower($sortDir) === 'asc' ? 'asc' : 'desc';
+
         $query = Comment::with('thread')
-            ->orderBy('created_at', 'desc');
+            ->orderBy($sortBy, $sortDir);
 
         if (isset($filters['status']) && $filters['status'] !== 'all') {
             $query->where('status', $filters['status']);
