@@ -3,7 +3,7 @@ pre-commit:
   commands:
     pint:
       glob: "*.php"
-      run: composer run pint -- --test
+      run: composer run pint:test
     phpstan:
       glob: "*.php"
       run: composer run phpstan
