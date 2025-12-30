@@ -66,7 +66,7 @@ export default function ImportIndex() {
         if (!file) return;
 
         const form = forms[type];
-        form.setData('file', file);
+        form.setData({ file });
 
         router.post(
             `/admin/import/${type}`,
@@ -271,7 +271,8 @@ export default function ImportIndex() {
                                             {form.progress && (
                                                 <Progress
                                                     value={
-                                                        form.progress.percentage
+                                                        form.progress
+                                                            .percentage ?? 0
                                                     }
                                                     animated
                                                 />
