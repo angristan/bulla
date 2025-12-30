@@ -6,8 +6,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Actions\Thread\GetCommentCounts;
 use App\Actions\Thread\GetThreadComments;
-use App\Models\Thread;
 use App\Http\Controllers\Controller;
+use App\Models\Thread;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
