@@ -38,7 +38,7 @@ class BloomFilter
     }
 
     /**
-     * Create from a binary string or stream resource (PostgreSQL returns bytea as stream).
+     * Create from a binary string or stream resource.
      *
      * @param  string|resource|null  $binary
      */

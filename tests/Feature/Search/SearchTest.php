@@ -40,20 +40,22 @@ class SearchTest extends TestCase
         $thread = Thread::factory()->create();
         Comment::factory()->create([
             'thread_id' => $thread->id,
-            'author' => 'John Doe',
+            'author' => 'Zephyr Uniquename',
+            'body_markdown' => 'Some content without the author name',
         ]);
         Comment::factory()->create([
             'thread_id' => $thread->id,
-            'author' => 'Jane Smith',
+            'author' => 'Other Person',
+            'body_markdown' => 'Different content here',
         ]);
 
         $searchManager = new SearchManager;
         $driver = $searchManager->driver();
 
-        $results = $driver->search(Comment::query(), 'John')->get();
+        $results = $driver->search(Comment::query(), 'Zephyr')->get();
 
         $this->assertCount(1, $results);
-        $this->assertEquals('John Doe', $results->first()->author);
+        $this->assertEquals('Zephyr Uniquename', $results->first()->author);
     }
 
     public function test_searches_comments_by_email(): void
@@ -61,20 +63,22 @@ class SearchTest extends TestCase
         $thread = Thread::factory()->create();
         Comment::factory()->create([
             'thread_id' => $thread->id,
-            'email' => 'john@example.com',
+            'email' => 'unique-tester@example.com',
+            'body_markdown' => 'Some content',
         ]);
         Comment::factory()->create([
             'thread_id' => $thread->id,
-            'email' => 'jane@example.org',
+            'email' => 'other@example.org',
+            'body_markdown' => 'Different content',
         ]);
 
         $searchManager = new SearchManager;
         $driver = $searchManager->driver();
 
-        $results = $driver->search(Comment::query(), 'john@example')->get();
+        $results = $driver->search(Comment::query(), 'unique-tester@example')->get();
 
         $this->assertCount(1, $results);
-        $this->assertEquals('john@example.com', $results->first()->email);
+        $this->assertEquals('unique-tester@example.com', $results->first()->email);
     }
 
     public function test_search_is_case_insensitive(): void

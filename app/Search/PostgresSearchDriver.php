@@ -15,14 +15,16 @@ class PostgresSearchDriver implements SearchDriver
      */
     public function search(Builder $query, string $term): Builder
     {
-        // Sanitize the search term for tsquery
-        $sanitized = $this->sanitizeForTsQuery($term);
+        // Sanitize the search term for tsquery (strips special chars that break FTS)
+        $sanitizedForFts = $this->sanitizeForTsQuery($term);
+        // For ILIKE, escape SQL wildcards but keep other characters like @
+        $sanitizedForLike = addcslashes($term, '%_');
 
-        return $query->where(function (Builder $q) use ($sanitized) {
+        return $query->where(function (Builder $q) use ($sanitizedForFts, $sanitizedForLike): void {
             $q->whereRaw(
                 "to_tsvector('english', coalesce(body_markdown, '') || ' ' || coalesce(author, '')) @@ plainto_tsquery('english', ?)",
-                [$sanitized]
-            )->orWhere('email', 'ILIKE', '%'.$sanitized.'%');
+                [$sanitizedForFts]
+            )->orWhere('email', 'ILIKE', '%'.$sanitizedForLike.'%');
         });
     }
 

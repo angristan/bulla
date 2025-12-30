@@ -31,7 +31,8 @@ RUN install-php-extensions \
     pdo_pgsql \
     opcache \
     intl \
-    bcmath
+    bcmath \
+    zip
 
 # Set working directory
 WORKDIR /app

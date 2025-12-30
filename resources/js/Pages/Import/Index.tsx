@@ -1,4 +1,5 @@
 import AdminLayout from '@/Layouts/AdminLayout';
+import { router, useForm, usePage } from '@inertiajs/react';
 import {
     Alert,
     Button,
@@ -13,7 +14,6 @@ import {
 } from '@mantine/core';
 import { Dropzone } from '@mantine/dropzone';
 import { notifications } from '@mantine/notifications';
-import { router, useForm, usePage } from '@inertiajs/react';
 import {
     IconBrandWordpress,
     IconCheck,
@@ -68,18 +68,23 @@ export default function ImportIndex() {
         const form = forms[type];
         form.setData('file', file);
 
-        router.post(`/admin/import/${type}`, { file }, {
-            forceFormData: true,
-            onError: (errors) => {
-                const message = errors.file || 'An error occurred during import';
-                notifications.show({
-                    title: 'Import failed',
-                    message,
-                    color: 'red',
-                    icon: <IconX size={16} />,
-                });
+        router.post(
+            `/admin/import/${type}`,
+            { file },
+            {
+                forceFormData: true,
+                onError: (errors) => {
+                    const message =
+                        errors.file || 'An error occurred during import';
+                    notifications.show({
+                        title: 'Import failed',
+                        message,
+                        color: 'red',
+                        icon: <IconX size={16} />,
+                    });
+                },
             },
-        });
+        );
     };
 
     const handleExport = async () => {
@@ -193,11 +198,16 @@ export default function ImportIndex() {
                         {importSources.map((source) => {
                             const form = forms[source.type];
                             return (
-                                <Tabs.Panel key={source.type} value={source.type}>
+                                <Tabs.Panel
+                                    key={source.type}
+                                    value={source.type}
+                                >
                                     <Card withBorder mt="md">
                                         <Stack gap="md">
                                             <div>
-                                                <Text fw={500}>{source.title}</Text>
+                                                <Text fw={500}>
+                                                    {source.title}
+                                                </Text>
                                                 <Text size="sm" c="dimmed">
                                                     {source.description}
                                                 </Text>
@@ -205,7 +215,10 @@ export default function ImportIndex() {
 
                                             <Dropzone
                                                 onDrop={(files) =>
-                                                    handleImport(files, source.type)
+                                                    handleImport(
+                                                        files,
+                                                        source.type,
+                                                    )
                                                 }
                                                 loading={form.processing}
                                                 accept={source.accept}
@@ -257,7 +270,9 @@ export default function ImportIndex() {
 
                                             {form.progress && (
                                                 <Progress
-                                                    value={form.progress.percentage}
+                                                    value={
+                                                        form.progress.percentage
+                                                    }
                                                     animated
                                                 />
                                             )}

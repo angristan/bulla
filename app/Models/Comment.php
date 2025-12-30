@@ -81,6 +81,24 @@ class Comment extends Model
     }
 
     /**
+     * Get the voters_bloom attribute.
+     * Handles PostgreSQL bytea streams correctly.
+     */
+    public function getVotersBloomAttribute(mixed $value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        // PostgreSQL returns bytea columns as stream resources
+        if (is_resource($value)) {
+            return stream_get_contents($value);
+        }
+
+        return $value;
+    }
+
+    /**
      * @return BelongsTo<Thread, $this>
      */
     public function thread(): BelongsTo
