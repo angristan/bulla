@@ -14,14 +14,21 @@ class GetOrCreateThread
     public function handle(string $uri, ?string $title = null, ?string $url = null): Thread
     {
         // Normalize URI (remove trailing slashes, leading slashes)
-        $uri = '/'.trim($uri, '/');
+        $normalizedUri = '/'.trim($uri, '/');
 
-        return Thread::firstOrCreate(
-            ['uri' => $uri],
-            [
-                'title' => $title,
-                'url' => $url,
-            ]
-        );
+        // Try to find existing thread - check trailing slash version first (backward compatibility)
+        $thread = Thread::where('uri', $normalizedUri.'/')
+            ->orWhere('uri', $normalizedUri)
+            ->first();
+
+        if ($thread) {
+            return $thread;
+        }
+
+        return Thread::create([
+            'uri' => $normalizedUri,
+            'title' => $title,
+            'url' => $url,
+        ]);
     }
 }

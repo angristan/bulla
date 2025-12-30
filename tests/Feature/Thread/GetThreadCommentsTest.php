@@ -23,20 +23,29 @@ describe('GET /api/threads/{uri}/comments', function (): void {
             ]);
     });
 
-    it('creates thread if not exists', function (): void {
+    it('does not create thread on GET', function (): void {
         $response = $this->getJson('/api/threads/new-page/comments');
 
-        $response->assertOk();
+        $response->assertOk()
+            ->assertJson([
+                'thread' => ['id' => null, 'uri' => '/new-page'],
+                'comments' => [],
+                'total' => 0,
+            ]);
 
-        $this->assertDatabaseHas('threads', [
+        $this->assertDatabaseMissing('threads', [
             'uri' => '/new-page',
         ]);
     });
 
     it('normalizes URI with slashes', function (): void {
-        $this->getJson('/api/threads//test-page//comments');
-        $this->getJson('/api/threads/test-page/comments');
+        Thread::create(['uri' => '/test-page']);
 
+        $response1 = $this->getJson('/api/threads//test-page//comments');
+        $response2 = $this->getJson('/api/threads/test-page/comments');
+
+        $response1->assertOk();
+        $response2->assertOk();
         $this->assertDatabaseCount('threads', 1);
     });
 
@@ -118,12 +127,12 @@ describe('GET /api/threads/{uri}/comments', function (): void {
 
     it('handles URL-encoded URIs', function (): void {
         $uri = '/blog/my-post';
+        Thread::create(['uri' => $uri]);
         $encoded = urlencode($uri);
 
         $response = $this->getJson("/api/threads/{$encoded}/comments");
 
-        $response->assertOk();
-
-        $this->assertDatabaseHas('threads', ['uri' => $uri]);
+        $response->assertOk()
+            ->assertJsonPath('thread.uri', $uri);
     });
 });
