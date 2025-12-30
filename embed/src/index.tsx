@@ -40,25 +40,29 @@ function init(options: OapaskaOptions) {
 
 // Auto-init from script attributes
 function autoInit() {
-    const script = document.currentScript as HTMLScriptElement;
+    // document.currentScript is null for dynamically loaded scripts
+    // Fall back to finding the script by its data attribute
+    const script =
+        (document.currentScript as HTMLScriptElement) ||
+        document.querySelector('script[data-marge]');
     if (!script) return;
 
-    const baseUrl = script.dataset.marge;
+    const baseUrl = script.getAttribute('data-marge');
     if (!baseUrl) return;
 
-    const theme = script.dataset.margeTheme as
+    const theme = script.getAttribute('data-marge-theme') as
         | 'light'
         | 'dark'
         | 'auto'
-        | undefined;
+        | null;
 
     // Wait for DOM to be ready
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', () => {
-            init({ baseUrl, theme });
+            init({ baseUrl, theme: theme || undefined });
         });
     } else {
-        init({ baseUrl, theme });
+        init({ baseUrl, theme: theme || undefined });
     }
 }
 
