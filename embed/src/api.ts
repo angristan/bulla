@@ -54,7 +54,7 @@ class Api {
     private baseUrl: string;
     private guest: boolean;
 
-    constructor(baseUrl: string, guest: boolean = false) {
+    constructor(baseUrl: string, guest = false) {
         this.baseUrl = baseUrl.replace(/\/$/, '');
         this.guest = guest;
     }

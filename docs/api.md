@@ -31,6 +31,8 @@ GET /api/threads/{uri}/comments
     {
       "id": 1,
       "parent_id": null,
+      "parent_author": null,
+      "depth": 0,
       "author": "John Doe",
       "avatar": "https://gravatar.com/avatar/...",
       "website": "https://example.com",
@@ -75,6 +77,9 @@ POST /api/threads/{uri}/comments
 ```json
 {
   "id": 2,
+  "parent_id": null,
+  "parent_author": null,
+  "depth": 0,
   "author": "Jane Doe",
   "avatar": "https://gravatar.com/avatar/...",
   "body_html": "<p>Comment in <strong>markdown</strong></p>",
@@ -199,6 +204,8 @@ GET /api/config
   "edit_window_minutes": 15
 }
 ```
+
+**Note:** `max_depth` (0-3) controls visual nesting only. Replies are always allowed at any depth. Comments beyond max_depth display a "↩ Author" link to navigate to parent.
 
 ### Get Timestamp
 
