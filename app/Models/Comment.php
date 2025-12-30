@@ -82,7 +82,7 @@ class Comment extends Model
 
     /**
      * Get the voters_bloom attribute.
-     * Handles PostgreSQL bytea streams correctly.
+     * Handles PostgreSQL bytea streams and hex-encoded format correctly.
      */
     public function getVotersBloomAttribute(mixed $value): ?string
     {
@@ -92,7 +92,12 @@ class Comment extends Model
 
         // PostgreSQL returns bytea columns as stream resources
         if (is_resource($value)) {
-            return stream_get_contents($value);
+            $value = stream_get_contents($value);
+        }
+
+        // Handle PostgreSQL hex-encoded bytea format (e.g., \x00ff...)
+        if (is_string($value) && str_starts_with($value, '\\x')) {
+            return hex2bin(substr($value, 2));
         }
 
         return $value;
