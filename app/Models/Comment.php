@@ -67,6 +67,8 @@ class Comment extends Model
         'edit_token',
         'edit_token_expires_at',
         'moderation_token',
+        'created_at',
+        'updated_at',
     ];
 
     protected function casts(): array
