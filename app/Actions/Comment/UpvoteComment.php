@@ -32,9 +32,10 @@ class UpvoteComment
         // Add to bloom filter
         $filter->add($voterId);
 
-        // Update comment
-        $comment->increment('upvotes');
-        $comment->update(['voters_bloom' => $filter->toBinary()]);
+        // Update comment - set attributes and save in one operation
+        $comment->upvotes = $comment->upvotes + 1;
+        $comment->voters_bloom = $filter->toBinary();
+        $comment->save();
 
         return $comment->upvotes;
     }
