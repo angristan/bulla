@@ -3,6 +3,7 @@ import {
     Box,
     Code,
     Container,
+    Group,
     Paper,
     SegmentedControl,
     Select,
@@ -105,12 +106,13 @@ export default function Preview({ appUrl, threads }: PreviewProps) {
                     </div>
 
                     <Paper p="md" withBorder>
-                        <Stack gap="md">
+                        <Group gap="lg" align="flex-end" wrap="wrap">
                             <div>
-                                <Text fw={500} mb="xs">
+                                <Text size="sm" fw={500} mb={4}>
                                     Theme
                                 </Text>
                                 <SegmentedControl
+                                    size="xs"
                                     value={theme}
                                     onChange={setTheme}
                                     data={[
@@ -121,10 +123,11 @@ export default function Preview({ appUrl, threads }: PreviewProps) {
                                 />
                             </div>
                             <div>
-                                <Text fw={500} mb="xs">
+                                <Text size="sm" fw={500} mb={4}>
                                     View as
                                 </Text>
                                 <SegmentedControl
+                                    size="xs"
                                     value={viewMode}
                                     onChange={setViewMode}
                                     data={[
@@ -133,24 +136,23 @@ export default function Preview({ appUrl, threads }: PreviewProps) {
                                     ]}
                                 />
                             </div>
-                            <div>
-                                <Text fw={500} mb="xs">
-                                    Thread
-                                </Text>
-                                <Select
-                                    value={selectedThread}
-                                    onChange={setSelectedThread}
-                                    data={threadOptions}
-                                    placeholder="Select a thread"
-                                    searchable
-                                    clearable
-                                />
-                            </div>
-                            <Text size="sm" c="dimmed">
-                                Preview URL:{' '}
-                                <Code>{selectedThread || '/preview-page'}</Code>
-                            </Text>
-                        </Stack>
+                            <Select
+                                label="Thread"
+                                size="xs"
+                                value={selectedThread}
+                                onChange={setSelectedThread}
+                                data={threadOptions}
+                                placeholder="Select a thread"
+                                searchable
+                                clearable
+                                description={
+                                    <Code fz="xs">
+                                        {selectedThread || '/preview-page'}
+                                    </Code>
+                                }
+                                style={{ flex: 1, minWidth: 250 }}
+                            />
+                        </Group>
                     </Paper>
 
                     {/* Mock blog post */}
