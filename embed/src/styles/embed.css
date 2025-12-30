@@ -329,16 +329,16 @@
     padding: 0.25rem 0.5rem;
     font-size: 13px;
     color: var(--marge-muted);
-    background: none;
-    border: none;
+    background: var(--marge-bg);
+    border: 1px solid var(--marge-border);
     border-radius: 4px;
     cursor: pointer;
     transition: all 0.15s ease;
 }
 
 .marge-action:hover:not(:disabled) {
-    background: var(--marge-border);
-    color: var(--marge-text);
+    border-color: var(--marge-primary);
+    color: var(--marge-primary);
 }
 
 .marge-action:disabled {
@@ -350,7 +350,8 @@
 }
 
 .marge-upvote-icon {
-    font-size: 10px;
+    width: 14px;
+    height: 14px;
 }
 
 /* Reply form */

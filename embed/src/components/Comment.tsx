@@ -139,7 +139,14 @@ export default function Comment({
                     onClick={handleUpvote}
                     disabled={hasVoted}
                 >
-                    <span className="marge-upvote-icon">▲</span>
+                    <svg
+                        className="marge-upvote-icon"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                        aria-hidden="true"
+                    >
+                        <path d="M12 4l-8 8h5v8h6v-8h5z" />
+                    </svg>
                     <span>{upvotes}</span>
                 </button>
 
