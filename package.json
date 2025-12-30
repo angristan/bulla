@@ -6,7 +6,7 @@
         "build": "vite build",
         "dev": "vite",
         "typecheck": "tsc --noEmit",
-        "prepare": "lefthook install"
+        "prepare": "[ -d .git ] && lefthook install || true"
     },
     "dependencies": {
         "@inertiajs/react": "^2.0.0",
