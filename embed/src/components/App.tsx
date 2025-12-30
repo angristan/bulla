@@ -135,7 +135,7 @@ export default function App({
 
             <div className="marge-footer">
                 <a
-                    href="https://github.com/your-repo/marge"
+                    href="https://github.com/angristan/marge"
                     target="_blank"
                     rel="noopener noreferrer"
                 >

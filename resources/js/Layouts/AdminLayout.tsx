@@ -10,6 +10,7 @@ import {
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import {
+    IconBrandGithub,
     IconDashboard,
     IconDatabaseImport,
     IconEye,
@@ -64,6 +65,16 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                         <Title order={3}>Marge</Title>
                     </Group>
                     <Group>
+                        <ActionIcon
+                            variant="subtle"
+                            component="a"
+                            href="https://github.com/angristan/marge"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            aria-label="GitHub"
+                        >
+                            <IconBrandGithub size={20} />
+                        </ActionIcon>
                         <ActionIcon
                             variant="subtle"
                             onClick={() => toggleColorScheme()}
