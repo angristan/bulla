@@ -8,7 +8,7 @@ uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
 
 beforeEach(function (): void {
     // Setup admin for auth tests
-    SetupAdmin::run('admin', 'password123', 'Test Site', 'https://example.com');
+    SetupAdmin::run('admin', 'admin@example.com', 'password123', 'Test Site', 'https://example.com');
 });
 
 describe('Admin Authentication', function (): void {

@@ -34,6 +34,8 @@ interface SettingsIndexProps {
     settings: {
         site_name: string;
         site_url: string | null;
+        admin_display_name: string;
+        admin_email: string | null;
         moderation_mode: string;
         require_author: boolean;
         require_email: boolean;
@@ -64,6 +66,8 @@ export default function SettingsIndex({ settings }: SettingsIndexProps) {
     const { data, setData, post, processing, recentlySuccessful } = useForm({
         site_name: settings.site_name,
         site_url: settings.site_url || '',
+        admin_display_name: settings.admin_display_name,
+        admin_email: settings.admin_email || '',
         moderation_mode: settings.moderation_mode,
         require_author: settings.require_author,
         require_email: settings.require_email,
@@ -170,6 +174,26 @@ export default function SettingsIndex({ settings }: SettingsIndexProps) {
                                     value={data.site_url}
                                     onChange={(e) =>
                                         setData('site_url', e.target.value)
+                                    }
+                                />
+                                <TextInput
+                                    label="Admin Display Name"
+                                    description="Name shown when posting comments as admin"
+                                    value={data.admin_display_name}
+                                    onChange={(e) =>
+                                        setData(
+                                            'admin_display_name',
+                                            e.target.value,
+                                        )
+                                    }
+                                />
+                                <TextInput
+                                    label="Admin Email"
+                                    description="Email used for Gravatar when posting as admin"
+                                    type="email"
+                                    value={data.admin_email}
+                                    onChange={(e) =>
+                                        setData('admin_email', e.target.value)
                                     }
                                 />
                                 <TextInput

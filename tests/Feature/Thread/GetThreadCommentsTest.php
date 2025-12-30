@@ -187,4 +187,61 @@ describe('GET /api/threads/{uri}/comments', function (): void {
         $response->assertOk()
             ->assertJsonPath('thread.uri', $uri);
     });
+
+    it('returns admin display name and email from settings', function (): void {
+        \App\Models\Setting::setValue('admin_display_name', 'Site Admin');
+        \App\Models\Setting::setValue('admin_email', 'admin@example.com');
+
+        $thread = Thread::create(['uri' => '/test']);
+        Comment::create([
+            'thread_id' => $thread->id,
+            'is_admin' => true,
+            'body_markdown' => 'Admin comment',
+            'body_html' => '<p>Admin comment</p>',
+            'status' => 'approved',
+        ]);
+
+        $response = $this->getJson('/api/threads/test/comments');
+
+        $response->assertOk()
+            ->assertJsonPath('comments.0.author', 'Site Admin')
+            ->assertJsonPath('comments.0.is_admin', true);
+    });
+
+    it('uses default admin name when setting not configured', function (): void {
+        $thread = Thread::create(['uri' => '/test']);
+        Comment::create([
+            'thread_id' => $thread->id,
+            'is_admin' => true,
+            'body_markdown' => 'Admin comment',
+            'body_html' => '<p>Admin comment</p>',
+            'status' => 'approved',
+        ]);
+
+        $response = $this->getJson('/api/threads/test/comments');
+
+        $response->assertOk()
+            ->assertJsonPath('comments.0.author', 'Admin')
+            ->assertJsonPath('comments.0.is_admin', true);
+    });
+
+    it('returns original author for non-admin comments', function (): void {
+        \App\Models\Setting::setValue('admin_display_name', 'Site Admin');
+
+        $thread = Thread::create(['uri' => '/test']);
+        Comment::create([
+            'thread_id' => $thread->id,
+            'author' => 'Regular User',
+            'is_admin' => false,
+            'body_markdown' => 'User comment',
+            'body_html' => '<p>User comment</p>',
+            'status' => 'approved',
+        ]);
+
+        $response = $this->getJson('/api/threads/test/comments');
+
+        $response->assertOk()
+            ->assertJsonPath('comments.0.author', 'Regular User')
+            ->assertJsonPath('comments.0.is_admin', false);
+    });
 });

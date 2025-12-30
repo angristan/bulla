@@ -83,10 +83,10 @@ class CommentController extends Controller
 
         return response()->json([
             'id' => $comment->id,
-            'author' => $comment->author,
+            'author' => $comment->display_author,
             'email_verified' => $comment->email_verified,
             'is_admin' => $comment->is_admin,
-            'avatar' => Gravatar::url($comment->email),
+            'avatar' => Gravatar::url($comment->display_email),
             'website' => $comment->website,
             'body_html' => $comment->body_html,
             'status' => $comment->status,
@@ -104,10 +104,10 @@ class CommentController extends Controller
     {
         return response()->json([
             'id' => $comment->id,
-            'author' => $comment->author,
+            'author' => $comment->display_author,
             'email_verified' => $comment->email_verified,
             'is_admin' => $comment->is_admin,
-            'avatar' => Gravatar::url($comment->email),
+            'avatar' => Gravatar::url($comment->display_email),
             'website' => $comment->website,
             'body_html' => $comment->body_html,
             'body_markdown' => $comment->body_markdown,
@@ -145,7 +145,7 @@ class CommentController extends Controller
 
         return response()->json([
             'id' => $updated->id,
-            'author' => $updated->author,
+            'author' => $updated->display_author,
             'website' => $updated->website,
             'body_html' => $updated->body_html,
             'body_markdown' => $updated->body_markdown,

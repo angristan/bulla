@@ -146,4 +146,28 @@ class Comment extends Model
 
         return hash_equals($this->moderation_token, $token);
     }
+
+    /**
+     * Get the display author name (uses admin settings for admin comments).
+     */
+    public function getDisplayAuthorAttribute(): ?string
+    {
+        if ($this->is_admin) {
+            return Setting::getValue('admin_display_name', 'Admin');
+        }
+
+        return $this->author;
+    }
+
+    /**
+     * Get the display email (uses admin settings for admin comments).
+     */
+    public function getDisplayEmailAttribute(): ?string
+    {
+        if ($this->is_admin) {
+            return Setting::getValue('admin_email');
+        }
+
+        return $this->email;
+    }
 }

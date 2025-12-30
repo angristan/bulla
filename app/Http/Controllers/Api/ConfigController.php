@@ -17,7 +17,11 @@ class ConfigController extends Controller
      */
     public function __invoke(Request $request): JsonResponse
     {
-        return response()->json([
+        $isAdmin = $request->query('guest') === '1'
+            ? false
+            : (bool) $request->session()->get('admin_authenticated', false);
+
+        $config = [
             'site_name' => Setting::getValue('site_name', 'Marge'),
             'require_author' => Setting::getValue('require_author', 'false') === 'true',
             'require_email' => Setting::getValue('require_email', 'false') === 'true',
@@ -25,9 +29,9 @@ class ConfigController extends Controller
             'max_depth' => (int) Setting::getValue('max_depth', '3'),
             'edit_window_minutes' => (int) Setting::getValue('edit_window_minutes', '15'),
             'timestamp' => GenerateTimestamp::run(),
-            'is_admin' => $request->query('guest') === '1'
-                ? false
-                : (bool) $request->session()->get('admin_authenticated', false),
-        ]);
+            'is_admin' => $isAdmin,
+        ];
+
+        return response()->json($config);
     }
 }

@@ -10,6 +10,7 @@ import {
     Stack,
     Tabs,
     Text,
+    TextInput,
     Title,
 } from '@mantine/core';
 import { Dropzone } from '@mantine/dropzone';
@@ -22,9 +23,10 @@ import {
     IconJson,
     IconMessageCircle,
     IconUpload,
+    IconUserCheck,
     IconX,
 } from '@tabler/icons-react';
-import { useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 type ImportType = 'isso' | 'json' | 'wordpress' | 'disqus';
 
@@ -42,6 +44,21 @@ export default function ImportIndex() {
     const jsonForm = useForm<{ file: File | null }>({ file: null });
     const wordpressForm = useForm<{ file: File | null }>({ file: null });
     const disqusForm = useForm<{ file: File | null }>({ file: null });
+
+    // Claim admin state
+    const [claimEmail, setClaimEmail] = useState('');
+    const [claimAuthor, setClaimAuthor] = useState('');
+    const [claimPreview, setClaimPreview] = useState<{
+        count: number;
+        comments: Array<{
+            id: number;
+            author: string;
+            body_excerpt: string;
+            thread_uri: string;
+            created_at: string;
+        }>;
+    } | null>(null);
+    const [isClaimLoading, setIsClaimLoading] = useState(false);
 
     const forms = {
         isso: issoForm,
@@ -120,6 +137,61 @@ export default function ImportIndex() {
         }
     };
 
+    const fetchClaimPreview = useCallback(
+        async (email: string, author: string) => {
+            if (!email && !author) {
+                setClaimPreview(null);
+                return;
+            }
+            setIsClaimLoading(true);
+            try {
+                const params = new URLSearchParams();
+                if (email) params.set('email', email);
+                if (author) params.set('author', author);
+                const response = await fetch(
+                    `/admin/settings/claim-admin/preview?${params}`,
+                );
+                const data = await response.json();
+                setClaimPreview(data);
+            } finally {
+                setIsClaimLoading(false);
+            }
+        },
+        [],
+    );
+
+    // Debounced preview fetch
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            fetchClaimPreview(claimEmail, claimAuthor);
+        }, 300);
+        return () => clearTimeout(timer);
+    }, [claimEmail, claimAuthor, fetchClaimPreview]);
+
+    const handleClaim = () => {
+        setIsClaimLoading(true);
+        router.post(
+            '/admin/settings/claim-admin',
+            { email: claimEmail, author: claimAuthor },
+            {
+                onSuccess: () => {
+                    setClaimEmail('');
+                    setClaimAuthor('');
+                    setClaimPreview(null);
+                    notifications.show({
+                        title: 'Comments claimed',
+                        message: 'Matching comments have been marked as admin.',
+                        color: 'green',
+                        icon: <IconCheck size={16} />,
+                    });
+                },
+                onFinish: () => {
+                    setIsClaimLoading(false);
+                },
+            },
+        );
+    };
+
     const importSources = [
         {
             type: 'isso' as ImportType,
@@ -192,6 +264,12 @@ export default function ImportIndex() {
                                 leftSection={<IconDownload size={16} />}
                             >
                                 Export
+                            </Tabs.Tab>
+                            <Tabs.Tab
+                                value="claim"
+                                leftSection={<IconUserCheck size={16} />}
+                            >
+                                Claim
                             </Tabs.Tab>
                         </Tabs.List>
 
@@ -300,6 +378,147 @@ export default function ImportIndex() {
                                         Export JSON
                                     </Button>
                                 </Group>
+                            </Card>
+                        </Tabs.Panel>
+
+                        <Tabs.Panel value="claim">
+                            <Card withBorder mt="md">
+                                <Stack gap="md">
+                                    <div>
+                                        <Text fw={500}>
+                                            Claim Admin Comments
+                                        </Text>
+                                        <Text size="sm" c="dimmed">
+                                            Mark imported comments as admin
+                                            based on email or author name.
+                                            Useful for claiming your old
+                                            comments.
+                                        </Text>
+                                    </div>
+                                    <Group align="flex-end" gap="sm">
+                                        <TextInput
+                                            label="Email"
+                                            placeholder="your@email.com"
+                                            value={claimEmail}
+                                            onChange={(e) =>
+                                                setClaimEmail(e.target.value)
+                                            }
+                                            autoComplete="off"
+                                            data-1p-ignore
+                                            style={{ flex: 1 }}
+                                        />
+                                        <TextInput
+                                            label="Author"
+                                            placeholder="Your Name"
+                                            value={claimAuthor}
+                                            onChange={(e) =>
+                                                setClaimAuthor(e.target.value)
+                                            }
+                                            autoComplete="off"
+                                            data-1p-ignore
+                                            style={{ flex: 1 }}
+                                        />
+                                    </Group>
+                                    {claimPreview !== null &&
+                                        claimPreview.count > 0 && (
+                                            <Stack gap="sm">
+                                                <Group
+                                                    justify="space-between"
+                                                    align="center"
+                                                >
+                                                    <Text size="sm">
+                                                        Found{' '}
+                                                        <strong>
+                                                            {claimPreview.count}{' '}
+                                                            comments
+                                                        </strong>
+                                                        {claimPreview.count >
+                                                            10 &&
+                                                            ' (showing 10 most recent)'}
+                                                    </Text>
+                                                    <Button
+                                                        size="sm"
+                                                        leftSection={
+                                                            <IconUserCheck
+                                                                size={16}
+                                                            />
+                                                        }
+                                                        onClick={handleClaim}
+                                                        loading={isClaimLoading}
+                                                    >
+                                                        Claim as admin
+                                                    </Button>
+                                                </Group>
+                                                <Stack gap="xs">
+                                                    {claimPreview.comments.map(
+                                                        (comment) => (
+                                                            <Card
+                                                                key={comment.id}
+                                                                padding="xs"
+                                                                withBorder
+                                                            >
+                                                                <Group
+                                                                    justify="space-between"
+                                                                    wrap="nowrap"
+                                                                >
+                                                                    <div
+                                                                        style={{
+                                                                            minWidth: 0,
+                                                                            flex: 1,
+                                                                        }}
+                                                                    >
+                                                                        <Text
+                                                                            size="sm"
+                                                                            truncate
+                                                                        >
+                                                                            {
+                                                                                comment.body_excerpt
+                                                                            }
+                                                                        </Text>
+                                                                        <Text
+                                                                            size="xs"
+                                                                            c="dimmed"
+                                                                        >
+                                                                            {
+                                                                                comment.thread_uri
+                                                                            }
+                                                                        </Text>
+                                                                    </div>
+                                                                    <Text
+                                                                        size="xs"
+                                                                        c="dimmed"
+                                                                        style={{
+                                                                            whiteSpace:
+                                                                                'nowrap',
+                                                                        }}
+                                                                    >
+                                                                        {
+                                                                            comment.created_at
+                                                                        }
+                                                                    </Text>
+                                                                </Group>
+                                                            </Card>
+                                                        ),
+                                                    )}
+                                                </Stack>
+                                            </Stack>
+                                        )}
+                                    {claimPreview !== null &&
+                                        claimPreview.count === 0 &&
+                                        (claimEmail || claimAuthor) && (
+                                            <Text size="sm" c="dimmed">
+                                                No matching comments found.
+                                            </Text>
+                                        )}
+                                    {claimPreview === null &&
+                                        !claimEmail &&
+                                        !claimAuthor && (
+                                            <Text size="sm" c="dimmed">
+                                                Enter an email or author name to
+                                                find comments.
+                                            </Text>
+                                        )}
+                                </Stack>
                             </Card>
                         </Tabs.Panel>
                     </Tabs>

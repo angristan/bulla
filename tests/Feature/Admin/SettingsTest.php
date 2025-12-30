@@ -11,7 +11,7 @@ use App\Models\Thread;
 uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
 
 beforeEach(function (): void {
-    SetupAdmin::run('admin', 'password123', 'Test Site', 'https://example.com');
+    SetupAdmin::run('admin', 'admin@example.com', 'password123', 'Test Site', 'https://example.com');
 
     $this->post('/admin/login', [
         'username' => 'admin',
@@ -147,5 +147,159 @@ describe('Admin Settings', function (): void {
         $this->delete('/admin/settings/wipe');
 
         expect(Setting::getValue('site_name'))->toBe('My Site');
+    });
+});
+
+describe('Claim Admin Comments', function (): void {
+    it('previews comments matching email', function (): void {
+        $thread = Thread::create(['uri' => '/test']);
+        Comment::create([
+            'thread_id' => $thread->id,
+            'author' => 'John',
+            'email' => 'john@example.com',
+            'body_markdown' => 'Test comment',
+            'body_html' => '<p>Test comment</p>',
+            'status' => Comment::STATUS_APPROVED,
+            'is_admin' => false,
+        ]);
+        Comment::create([
+            'thread_id' => $thread->id,
+            'author' => 'Jane',
+            'email' => 'jane@example.com',
+            'body_markdown' => 'Another comment',
+            'body_html' => '<p>Another comment</p>',
+            'status' => Comment::STATUS_APPROVED,
+            'is_admin' => false,
+        ]);
+
+        $response = $this->getJson('/admin/settings/claim-admin/preview?email=john@example.com');
+
+        $response->assertOk()
+            ->assertJson([
+                'count' => 1,
+            ])
+            ->assertJsonCount(1, 'comments')
+            ->assertJsonPath('comments.0.author', 'John');
+    });
+
+    it('previews comments matching author name', function (): void {
+        $thread = Thread::create(['uri' => '/test']);
+        Comment::create([
+            'thread_id' => $thread->id,
+            'author' => 'John Doe',
+            'body_markdown' => 'Test comment',
+            'body_html' => '<p>Test comment</p>',
+            'status' => Comment::STATUS_APPROVED,
+            'is_admin' => false,
+        ]);
+
+        $response = $this->getJson('/admin/settings/claim-admin/preview?author=John+Doe');
+
+        $response->assertOk()
+            ->assertJson(['count' => 1]);
+    });
+
+    it('excludes already admin comments from preview', function (): void {
+        $thread = Thread::create(['uri' => '/test']);
+        Comment::create([
+            'thread_id' => $thread->id,
+            'author' => 'John',
+            'email' => 'john@example.com',
+            'body_markdown' => 'Admin comment',
+            'body_html' => '<p>Admin comment</p>',
+            'status' => Comment::STATUS_APPROVED,
+            'is_admin' => true,
+        ]);
+
+        $response = $this->getJson('/admin/settings/claim-admin/preview?email=john@example.com');
+
+        $response->assertOk()
+            ->assertJson(['count' => 0]);
+    });
+
+    it('returns empty when no criteria provided', function (): void {
+        $response = $this->getJson('/admin/settings/claim-admin/preview');
+
+        $response->assertOk()
+            ->assertJson(['count' => 0, 'comments' => []]);
+    });
+
+    it('claims comments as admin by email', function (): void {
+        $thread = Thread::create(['uri' => '/test']);
+        $comment = Comment::create([
+            'thread_id' => $thread->id,
+            'author' => 'John',
+            'email' => 'john@example.com',
+            'body_markdown' => 'Test comment',
+            'body_html' => '<p>Test comment</p>',
+            'status' => Comment::STATUS_APPROVED,
+            'is_admin' => false,
+        ]);
+
+        $response = $this->post('/admin/settings/claim-admin', [
+            'email' => 'john@example.com',
+        ]);
+
+        $response->assertRedirect();
+        $comment->refresh();
+        expect($comment->is_admin)->toBeTrue();
+    });
+
+    it('claims comments as admin by author name', function (): void {
+        $thread = Thread::create(['uri' => '/test']);
+        $comment = Comment::create([
+            'thread_id' => $thread->id,
+            'author' => 'John Doe',
+            'body_markdown' => 'Test comment',
+            'body_html' => '<p>Test comment</p>',
+            'status' => Comment::STATUS_APPROVED,
+            'is_admin' => false,
+        ]);
+
+        $response = $this->post('/admin/settings/claim-admin', [
+            'author' => 'John Doe',
+        ]);
+
+        $response->assertRedirect();
+        $comment->refresh();
+        expect($comment->is_admin)->toBeTrue();
+    });
+
+    it('claims comments matching both email and author', function (): void {
+        $thread = Thread::create(['uri' => '/test']);
+        Comment::create([
+            'thread_id' => $thread->id,
+            'author' => 'John',
+            'email' => 'john@example.com',
+            'body_markdown' => 'Match both',
+            'body_html' => '<p>Match both</p>',
+            'status' => Comment::STATUS_APPROVED,
+            'is_admin' => false,
+        ]);
+        Comment::create([
+            'thread_id' => $thread->id,
+            'author' => 'John',
+            'email' => 'different@example.com',
+            'body_markdown' => 'Match author only',
+            'body_html' => '<p>Match author only</p>',
+            'status' => Comment::STATUS_APPROVED,
+            'is_admin' => false,
+        ]);
+
+        $response = $this->post('/admin/settings/claim-admin', [
+            'email' => 'john@example.com',
+            'author' => 'John',
+        ]);
+
+        $response->assertRedirect();
+        // Only the first comment should be claimed (matches both)
+        expect(Comment::where('is_admin', true)->count())->toBe(1);
+    });
+
+    it('returns error when no criteria provided for claim', function (): void {
+        $response = $this->post('/admin/settings/claim-admin', []);
+
+        $response->assertRedirect()
+            ->assertSessionHas('error');
     });
 });

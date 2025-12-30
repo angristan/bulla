@@ -38,6 +38,8 @@ Route::middleware([RedirectIfSetupRequired::class, AdminAuthenticated::class])->
     Route::get('/settings', [SettingsController::class, 'index'])->name('admin.settings.index');
     Route::post('/settings', [SettingsController::class, 'update'])->name('admin.settings.update');
     Route::delete('/settings/wipe', [SettingsController::class, 'wipe'])->name('admin.settings.wipe');
+    Route::get('/settings/claim-admin/preview', [SettingsController::class, 'previewClaimAdmin'])->name('admin.settings.claim-admin.preview');
+    Route::post('/settings/claim-admin', [SettingsController::class, 'claimAdmin'])->name('admin.settings.claim-admin');
 
     // Import/Export
     Route::get('/import', [ImportController::class, 'index'])->name('admin.import.index');

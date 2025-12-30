@@ -67,9 +67,9 @@ class ListComments
         return [
             'data' => collect($paginator->items())->map(fn (Comment $comment) => [
                 'id' => $comment->id,
-                'author' => $comment->author,
+                'author' => $comment->display_author,
                 'email' => $comment->email,
-                'avatar' => Gravatar::url($comment->email, 40),
+                'avatar' => Gravatar::url($comment->display_email, 40),
                 'body_excerpt' => Markdown::toPlainText($comment->body_markdown, 150),
                 'body_html' => $comment->body_html,
                 'status' => $comment->status,

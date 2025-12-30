@@ -30,11 +30,13 @@ class SetupController extends Controller
             'site_name' => ['required', 'string', 'max:255'],
             'site_url' => ['required', 'url', 'max:1024'],
             'username' => ['required', 'string', 'min:3', 'max:50'],
+            'email' => ['required', 'email', 'max:255'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
         ]);
 
         SetupAdmin::run(
             $validated['username'],
+            $validated['email'],
             $validated['password'],
             $validated['site_name'],
             $validated['site_url']

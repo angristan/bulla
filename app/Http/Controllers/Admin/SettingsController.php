@@ -7,6 +7,8 @@ namespace App\Http\Controllers\Admin;
 use App\Actions\Admin\UpdateSettings;
 use App\Actions\Admin\WipeAllData;
 use App\Http\Controllers\Controller;
+use App\Models\Comment;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -35,6 +37,8 @@ class SettingsController extends Controller
             // General
             'site_name' => ['nullable', 'string', 'max:255'],
             'site_url' => ['nullable', 'url', 'max:1024'],
+            'admin_display_name' => ['nullable', 'string', 'max:255'],
+            'admin_email' => ['nullable', 'email', 'max:255'],
 
             // Moderation
             'moderation_mode' => ['nullable', 'string', 'in:none,all,unverified'],
@@ -91,5 +95,73 @@ class SettingsController extends Controller
             'success',
             "Deleted {$counts['comments']} comments, {$counts['threads']} threads, and {$counts['mappings']} import mappings."
         );
+    }
+
+    /**
+     * Preview comments that would be claimed as admin.
+     */
+    public function previewClaimAdmin(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'email' => ['nullable', 'string', 'max:255'],
+            'author' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        if (empty($validated['email']) && empty($validated['author'])) {
+            return response()->json(['count' => 0, 'comments' => []]);
+        }
+
+        $query = Comment::with('thread')->where('is_admin', false);
+
+        if (! empty($validated['email'])) {
+            $query->where('email', $validated['email']);
+        }
+
+        if (! empty($validated['author'])) {
+            $query->where('author', $validated['author']);
+        }
+
+        $count = $query->count();
+        $comments = $query->orderBy('created_at', 'desc')
+            ->limit(10)
+            ->get()
+            ->map(fn (Comment $c) => [
+                'id' => $c->id,
+                'author' => $c->author,
+                'body_excerpt' => mb_substr(strip_tags($c->body_html), 0, 100),
+                'thread_uri' => $c->thread->uri,
+                'created_at' => $c->created_at->diffForHumans(),
+            ]);
+
+        return response()->json(['count' => $count, 'comments' => $comments]);
+    }
+
+    /**
+     * Claim comments as admin.
+     */
+    public function claimAdmin(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'email' => ['nullable', 'string', 'max:255'],
+            'author' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        if (empty($validated['email']) && empty($validated['author'])) {
+            return back()->with('error', 'Please provide an email or author name.');
+        }
+
+        $query = Comment::where('is_admin', false);
+
+        if (! empty($validated['email'])) {
+            $query->where('email', $validated['email']);
+        }
+
+        if (! empty($validated['author'])) {
+            $query->where('author', $validated['author']);
+        }
+
+        $count = $query->update(['is_admin' => true]);
+
+        return back()->with('success', "Marked {$count} comments as admin.");
     }
 }

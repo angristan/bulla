@@ -51,10 +51,10 @@ class CommentsController extends Controller
         return Inertia::render('Comments/Show', [
             'comment' => [
                 'id' => $comment->id,
-                'author' => $comment->author,
+                'author' => $comment->display_author,
                 'email' => $comment->email,
                 'website' => $comment->website,
-                'avatar' => Gravatar::url($comment->email),
+                'avatar' => Gravatar::url($comment->display_email),
                 'body_markdown' => $comment->body_markdown,
                 'body_html' => $comment->body_html,
                 'status' => $comment->status,
@@ -71,7 +71,7 @@ class CommentsController extends Controller
                 ],
                 'parent' => $comment->parent ? [
                     'id' => $comment->parent->id,
-                    'author' => $comment->parent->author,
+                    'author' => $comment->parent->display_author,
                 ] : null,
                 'replies_count' => $comment->replies->count(),
             ],

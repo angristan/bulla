@@ -39,8 +39,8 @@ export default function CommentForm({
         try {
             await api.createComment(uri, {
                 parent_id: parentId,
-                author: author || undefined,
-                email: email || undefined,
+                author: config.is_admin ? undefined : author || undefined,
+                email: config.is_admin ? undefined : email || undefined,
                 website: website || undefined,
                 body,
                 notify_replies: notifyReplies,

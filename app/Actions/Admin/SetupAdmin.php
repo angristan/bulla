@@ -17,11 +17,13 @@ class SetupAdmin
      */
     public function handle(
         string $username,
+        string $email,
         string $password,
         string $siteName,
         string $siteUrl
     ): void {
         Setting::setValue('admin_username', $username);
+        Setting::setValue('admin_email', $email);
         Setting::setValue('admin_password', Hash::make($password));
         Setting::setValue('site_name', $siteName);
         Setting::setValue('site_url', $siteUrl);

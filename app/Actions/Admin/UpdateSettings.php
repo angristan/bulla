@@ -21,6 +21,8 @@ class UpdateSettings
         $allowedSettings = [
             'site_name',
             'site_url',
+            'admin_display_name',
+            'admin_email',
             'moderation_mode',
             'require_author',
             'require_email',
@@ -66,6 +68,8 @@ class UpdateSettings
             // General
             'site_name' => Setting::getValue('site_name', 'Marge'),
             'site_url' => Setting::getValue('site_url'),
+            'admin_display_name' => Setting::getValue('admin_display_name', 'Admin'),
+            'admin_email' => Setting::getValue('admin_email'),
 
             // Moderation
             'moderation_mode' => Setting::getValue('moderation_mode', 'none'),
