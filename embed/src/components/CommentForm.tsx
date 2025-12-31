@@ -248,7 +248,6 @@ export default function CommentForm({
                     ) : (
                         <div
                             className="bulla-comment-body"
-                            // biome-ignore lint/security/noDangerouslySetInnerHtml: HTML is sanitized server-side
                             dangerouslySetInnerHTML={{ __html: previewHtml }}
                         />
                     )}

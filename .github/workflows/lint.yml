@@ -66,9 +66,7 @@ jobs:
         with:
           node-version: "lts/*"
       - name: npm ci
-        working-directory: embed
         run: npm ci
 
       - name: biome
-        working-directory: embed
-        run: npm run check
+        run: npx biome check embed/

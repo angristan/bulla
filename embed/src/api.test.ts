@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import Api from './api';
 import type { Config, CreateCommentResponse, ThreadResponse } from './api';
+import Api from './api';
 
 describe('Api', () => {
     let api: Api;

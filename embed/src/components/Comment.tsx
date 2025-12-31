@@ -205,7 +205,6 @@ export default function Comment({
 
             <div
                 className="bulla-comment-body"
-                // biome-ignore lint/security/noDangerouslySetInnerHtml: HTML is sanitized server-side
                 dangerouslySetInnerHTML={{ __html: comment.body_html }}
             />
 

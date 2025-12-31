@@ -1,4 +1,3 @@
-import AdminLayout from '@/Layouts/AdminLayout';
 import { Link } from '@inertiajs/react';
 import { BarChart } from '@mantine/charts';
 import {
@@ -15,6 +14,7 @@ import {
     Title,
 } from '@mantine/core';
 import { IconCheck, IconCopy, IconEye } from '@tabler/icons-react';
+import AdminLayout from '@/Layouts/AdminLayout';
 
 interface Comment {
     id: number;
@@ -42,7 +42,10 @@ interface DashboardProps {
 
 function formatChartMonth(monthStr: string): string {
     const [year, month] = monthStr.split('-');
-    const date = new Date(Number.parseInt(year), Number.parseInt(month) - 1);
+    const date = new Date(
+        Number.parseInt(year, 10),
+        Number.parseInt(month, 10) - 1,
+    );
     return date.toLocaleDateString('en-US', { month: 'short' });
 }
 
@@ -55,8 +58,8 @@ const statusColors: Record<string, string> = {
 
 export default function Dashboard({
     stats,
-    siteName,
-    siteUrl,
+    siteName: _siteName,
+    siteUrl: _siteUrl,
 }: DashboardProps) {
     const bullaUrl = window.location.origin;
     const embedCode = `<script src="${bullaUrl}/embed/embed.js" data-bulla="${bullaUrl}" async></script>

@@ -1,12 +1,12 @@
-import { defineConfig } from 'vite';
 import preact from '@preact/preset-vite';
+import { defineConfig } from 'vite';
 import cssInjectedByJsPlugin from 'vite-plugin-css-injected-by-js';
 
 export default defineConfig({
     plugins: [preact(), cssInjectedByJsPlugin()],
     resolve: {
         alias: {
-            'react': 'preact/compat',
+            react: 'preact/compat',
             'react-dom': 'preact/compat',
             'react/jsx-runtime': 'preact/jsx-runtime',
         },

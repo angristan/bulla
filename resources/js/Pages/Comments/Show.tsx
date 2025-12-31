@@ -1,4 +1,3 @@
-import AdminLayout from '@/Layouts/AdminLayout';
 import { Link, router } from '@inertiajs/react';
 import {
     Anchor,
@@ -17,7 +16,6 @@ import {
 import {
     IconArrowLeft,
     IconCheck,
-    IconClock,
     IconExternalLink,
     IconMail,
     IconThumbUp,
@@ -25,6 +23,7 @@ import {
     IconWorld,
     IconX,
 } from '@tabler/icons-react';
+import AdminLayout from '@/Layouts/AdminLayout';
 
 interface CommentShowProps {
     comment: {

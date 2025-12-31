@@ -5,7 +5,7 @@ import '@mantine/dropzone/styles.css';
 import '@mantine/charts/styles.css';
 
 import { createInertiaApp } from '@inertiajs/react';
-import { MantineProvider, createTheme } from '@mantine/core';
+import { createTheme, MantineProvider } from '@mantine/core';
 import { ModalsProvider } from '@mantine/modals';
 import { Notifications } from '@mantine/notifications';
 import { createRoot } from 'react-dom/client';

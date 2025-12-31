@@ -1,5 +1,3 @@
-import AdminLayout from '@/Layouts/AdminLayout';
-import { useUrlState } from '@/hooks/useUrlState';
 import {
     Box,
     Container,
@@ -13,6 +11,8 @@ import {
     useComputedColorScheme,
 } from '@mantine/core';
 import { useEffect, useRef } from 'react';
+import { useUrlState } from '@/hooks/useUrlState';
+import AdminLayout from '@/Layouts/AdminLayout';
 
 declare global {
     interface Window {

@@ -2,7 +2,6 @@ import { useForm } from '@inertiajs/react';
 import {
     Button,
     Center,
-    Code,
     Container,
     Group,
     Paper,

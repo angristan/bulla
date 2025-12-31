@@ -15,7 +15,7 @@ pre-commit:
       run: npm run lint
     biome-embed:
       glob: "embed/**/*.{js,ts,tsx}"
-      run: npm run check --prefix embed
+      run: npx biome check embed/
     test-embed:
       glob: "embed/**/*.{ts,tsx}"
       run: npm run test:run --prefix embed

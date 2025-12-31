@@ -1,5 +1,3 @@
-import AdminLayout from '@/Layouts/AdminLayout';
-import { useUrlState } from '@/hooks/useUrlState';
 import { router, useForm } from '@inertiajs/react';
 import {
     Alert,
@@ -15,8 +13,8 @@ import {
     Switch,
     Tabs,
     Text,
-    TextInput,
     Textarea,
+    TextInput,
     Title,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
@@ -32,6 +30,8 @@ import {
     IconTrash,
 } from '@tabler/icons-react';
 import { type FormEvent, useState } from 'react';
+import { useUrlState } from '@/hooks/useUrlState';
+import AdminLayout from '@/Layouts/AdminLayout';
 
 interface SettingsIndexProps {
     settings: {
@@ -78,7 +78,7 @@ export default function SettingsIndex({ settings }: SettingsIndexProps) {
     const [wipeConfirmation, setWipeConfirmation] = useState('');
     const [isWiping, setIsWiping] = useState(false);
 
-    const { data, setData, post, processing, recentlySuccessful } = useForm({
+    const { data, setData, post, processing } = useForm({
         site_name: settings.site_name,
         site_url: settings.site_url || '',
         admin_display_name: settings.admin_display_name,

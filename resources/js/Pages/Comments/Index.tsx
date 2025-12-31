@@ -1,4 +1,3 @@
-import AdminLayout from '@/Layouts/AdminLayout';
 import { Link, router } from '@inertiajs/react';
 import {
     ActionIcon,
@@ -27,6 +26,7 @@ import {
     IconX,
 } from '@tabler/icons-react';
 import { useEffect, useState } from 'react';
+import AdminLayout from '@/Layouts/AdminLayout';
 
 interface Comment {
     id: number;

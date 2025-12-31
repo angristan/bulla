@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'preact/hooks';
-import Api from '../api';
 import type { Config, ThreadResponse } from '../api';
+import Api from '../api';
 import Comment from './Comment';
 import CommentForm from './CommentForm';
 
