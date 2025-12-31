@@ -13,7 +13,7 @@ import {
     TextInput,
     Title,
 } from '@mantine/core';
-import { type FormEvent, useState } from 'react';
+import { type FormEvent, useEffect, useState } from 'react';
 
 export default function Setup() {
     const [active, setActive] = useState(0);
@@ -49,6 +49,18 @@ export default function Setup() {
                 return true;
         }
     };
+
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Enter' && active < 2 && canProceed()) {
+                e.preventDefault();
+                nextStep();
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [active, data]);
 
     return (
         <Container size={600} my={50}>
