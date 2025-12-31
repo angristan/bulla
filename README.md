@@ -9,8 +9,8 @@ A self-hosted comment system for static sites and blogs. Modern replacement for 
 - **Nested replies** - Configurable nesting depth
 - **Sorting** - Sort by oldest, newest, or popular (by votes)
 - **Dark mode** - Light, dark, or auto (follows system preference)
+- **GitHub login** - Optional GitHub authentication for commenters
 - **Email notifications** - Notify authors when they receive replies
-- **Email verification** - Verified badge for confirmed emails
 - **Voting** - Optional upvotes and downvotes with duplicate prevention
 - **Moderation** - Approve, spam, delete from admin panel or email
 - **Admin comments** - Post as admin from your site when logged in
@@ -124,6 +124,7 @@ All configuration is done through the admin panel after initial setup. Key setti
 - **Rate limiting:** Comments per minute per IP
 - **Blocked words:** Spam keyword list
 - **SMTP:** Email notification settings
+- **GitHub OAuth:** Client ID and secret for commenter authentication
 
 ## License
 

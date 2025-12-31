@@ -50,6 +50,16 @@ export default function App({
         }
     }, [api, uri, sort]);
 
+    // Refresh config only (for GitHub login/logout)
+    const refreshConfig = useCallback(async () => {
+        try {
+            const configData = await api.getConfig();
+            setConfig(configData);
+        } catch {
+            // Ignore errors - config refresh is not critical
+        }
+    }, [api]);
+
     useEffect(() => {
         loadData();
     }, [loadData]);
@@ -142,6 +152,7 @@ export default function App({
                 pageTitle={pageTitle}
                 pageUrl={pageUrl}
                 onSubmit={loadData}
+                onConfigRefresh={refreshConfig}
             />
 
             <div className="marge-comments">
@@ -159,6 +170,7 @@ export default function App({
                             uri={uri}
                             depth={0}
                             onRefresh={loadData}
+                            onConfigRefresh={refreshConfig}
                         />
                     ))
                 )}

@@ -36,6 +36,8 @@ class UpdateSettings
             'custom_css',
             'enable_upvotes',
             'enable_downvotes',
+            'enable_github_login',
+            'github_client_id',
             'smtp_host',
             'smtp_port',
             'smtp_username',
@@ -45,6 +47,7 @@ class UpdateSettings
 
         $encryptedSettings = [
             'smtp_password',
+            'github_client_secret',
         ];
 
         foreach ($settings as $key => $value) {
@@ -96,6 +99,11 @@ class UpdateSettings
             // Voting
             'enable_upvotes' => Setting::getValue('enable_upvotes', 'true') === 'true',
             'enable_downvotes' => Setting::getValue('enable_downvotes', 'false') === 'true',
+
+            // GitHub OAuth
+            'enable_github_login' => Setting::getValue('enable_github_login', 'false') === 'true',
+            'github_client_id' => Setting::getValue('github_client_id'),
+            'github_configured' => Setting::getValue('github_client_id') !== null && Setting::getValue('github_client_secret') !== null,
 
             // Email (without password)
             'smtp_host' => Setting::getValue('smtp_host'),

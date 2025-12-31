@@ -17,9 +17,19 @@ class ConfigController extends Controller
      */
     public function __invoke(Request $request): JsonResponse
     {
-        $isAdmin = $request->query('guest') === '1'
+        $isGuest = $request->query('guest') === '1';
+        $isAdmin = $isGuest
             ? false
             : (bool) $request->session()->get('admin_authenticated', false);
+
+        // Get commenter session data (GitHub authenticated)
+        // Note: Guest mode hides admin status but still allows GitHub auth
+        $commenter = $request->session()->get('commenter');
+
+        // Check if GitHub auth is enabled (credentials configured AND setting enabled)
+        $githubAuthEnabled = Setting::getValue('github_client_id')
+            && Setting::getValue('github_client_secret')
+            && Setting::getValue('enable_github_login', 'false') === 'true';
 
         $config = [
             'site_name' => Setting::getValue('site_name', 'Marge'),
@@ -32,6 +42,8 @@ class ConfigController extends Controller
             'is_admin' => $isAdmin,
             'enable_upvotes' => Setting::getValue('enable_upvotes', 'true') === 'true',
             'enable_downvotes' => Setting::getValue('enable_downvotes', 'false') === 'true',
+            'github_auth_enabled' => $githubAuthEnabled,
+            'commenter' => $commenter,
         ];
 
         return response()->json($config);

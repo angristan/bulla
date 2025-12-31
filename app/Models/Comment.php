@@ -17,6 +17,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property int $depth
  * @property string|null $author
  * @property string|null $email
+ * @property string|null $github_id
+ * @property string|null $github_username
  * @property string|null $website
  * @property bool $is_admin
  * @property string $body_markdown
@@ -54,6 +56,8 @@ class Comment extends Model
         'depth',
         'author',
         'email',
+        'github_id',
+        'github_username',
         'website',
         'is_admin',
         'body_markdown',

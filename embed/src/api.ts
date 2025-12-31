@@ -5,6 +5,8 @@ export interface Comment {
     depth: number;
     author: string | null;
     is_admin: boolean;
+    is_github_user: boolean;
+    github_username: string | null;
     avatar: string;
     website: string | null;
     body_html: string;
@@ -12,6 +14,13 @@ export interface Comment {
     downvotes: number;
     created_at: string;
     replies: Comment[];
+}
+
+export interface Commenter {
+    github_id: string;
+    github_username: string | null;
+    name: string | null;
+    email: string | null;
 }
 
 export interface ThreadResponse {
@@ -35,12 +44,15 @@ export interface Config {
     is_admin: boolean;
     enable_upvotes: boolean;
     enable_downvotes: boolean;
+    github_auth_enabled: boolean;
+    commenter: Commenter | null;
 }
 
 export interface CreateCommentResponse {
     id: number;
     author: string | null;
     is_admin: boolean;
+    is_github_user: boolean;
     avatar: string;
     website: string | null;
     body_html: string;
@@ -153,6 +165,17 @@ class Api {
         });
         if (!response.ok) throw new Error('Failed to preview');
         return response.json();
+    }
+
+    async logout(): Promise<void> {
+        await fetch(`${this.baseUrl}/auth/logout`, {
+            method: 'POST',
+            credentials: 'include',
+        });
+    }
+
+    getGitHubAuthUrl(): string {
+        return `${this.baseUrl}/auth/github/redirect`;
     }
 }
 

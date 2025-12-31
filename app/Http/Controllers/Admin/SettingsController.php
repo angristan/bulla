@@ -46,6 +46,9 @@ class SettingsController extends Controller
             'require_email' => ['nullable', 'boolean'],
             'enable_upvotes' => ['nullable', 'boolean'],
             'enable_downvotes' => ['nullable', 'boolean'],
+            'enable_github_login' => ['nullable', 'boolean'],
+            'github_client_id' => ['nullable', 'string', 'max:255'],
+            'github_client_secret' => ['nullable', 'string', 'max:255'],
 
             // Limits
             'max_depth' => ['nullable', 'integer', 'min:0', 'max:3'],
@@ -73,7 +76,7 @@ class SettingsController extends Controller
         ]);
 
         // Convert booleans to strings
-        foreach (['require_author', 'require_email', 'enable_upvotes', 'enable_downvotes'] as $key) {
+        foreach (['require_author', 'require_email', 'enable_upvotes', 'enable_downvotes', 'enable_github_login'] as $key) {
             if (isset($validated[$key])) {
                 $validated[$key] = $validated[$key] ? 'true' : 'false';
             }

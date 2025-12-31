@@ -87,6 +87,13 @@ class GetThreadComments
         // Sort replies - always chronological for replies (oldest first for conversation flow)
         $sortedReplies = $replies->sortBy('created_at')->values();
 
+        // Use GitHub avatar if available, otherwise Gravatar
+        $avatarUrl = $comment->github_username
+            ? "https://github.com/{$comment->github_username}.png"
+            : ($comment->display_email
+                ? Gravatar::url($comment->display_email)
+                : Gravatar::urlForIp($comment->remote_addr, (string) $comment->thread_id));
+
         return [
             'id' => $comment->id,
             'parent_id' => $comment->parent_id,
@@ -94,9 +101,9 @@ class GetThreadComments
             'depth' => $comment->depth,
             'author' => $comment->display_author,
             'is_admin' => $comment->is_admin,
-            'avatar' => $comment->display_email
-                ? Gravatar::url($comment->display_email)
-                : Gravatar::urlForIp($comment->remote_addr, (string) $comment->thread_id),
+            'is_github_user' => $comment->github_id !== null,
+            'github_username' => $comment->github_username,
+            'avatar' => $avatarUrl,
             'website' => $comment->website,
             'body_html' => $comment->body_html,
             'upvotes' => $comment->upvotes,

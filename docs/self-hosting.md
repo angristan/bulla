@@ -82,6 +82,21 @@ docker compose up -d
 3. Create admin credentials
 4. (Optional) Configure email settings
 
+## GitHub Login (Optional)
+
+Allow commenters to authenticate with GitHub instead of entering name/email manually.
+
+1. Go to [GitHub Developer Settings](https://github.com/settings/developers)
+2. Click "New OAuth App"
+3. Fill in:
+   - **Application name:** Your site name (e.g., "My Blog Comments")
+   - **Homepage URL:** Your site URL
+   - **Authorization callback URL:** `https://your-marge-url/auth/github/callback`
+4. Copy the Client ID and generate a Client Secret
+5. In Marge Admin > Settings > Authentication:
+   - Enable "GitHub Login"
+   - Enter your Client ID and Client Secret
+
 ## Reverse Proxy Setup
 
 ### Caddy

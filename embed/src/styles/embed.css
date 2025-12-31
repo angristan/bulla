@@ -70,6 +70,120 @@
     border-color: var(--marge-primary);
 }
 
+/* GitHub Auth Section */
+.marge-auth-section {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--marge-border);
+}
+
+.marge-auth-divider {
+    color: var(--marge-muted);
+    font-size: 13px;
+}
+
+.marge-btn-github {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    background: #24292e;
+    color: white;
+    padding: 0.375rem 0.75rem;
+    font-size: 13px;
+    font-weight: 500;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+.marge-btn-github:hover {
+    background: #1b1f23;
+}
+
+.marge-theme-dark .marge-btn-github {
+    background: #6e7681;
+}
+
+.marge-theme-dark .marge-btn-github:hover {
+    background: #8b949e;
+}
+
+.marge-github-icon {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+}
+
+/* Commenter Info */
+.marge-commenter-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    background: var(--marge-border);
+    border-radius: 6px;
+}
+
+.marge-commenter-profile {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 1;
+    min-width: 0;
+    text-decoration: none;
+    color: inherit;
+    transition: opacity 0.15s ease;
+}
+
+.marge-commenter-profile:hover {
+    opacity: 0.8;
+}
+
+.marge-commenter-avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.marge-commenter-name {
+    font-weight: 500;
+    font-size: 13px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.marge-commenter-username {
+    font-weight: 400;
+    color: var(--marge-muted);
+}
+
+.marge-btn-logout {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    background: transparent;
+    border: none;
+    color: var(--marge-muted);
+    font-size: 12px;
+    cursor: pointer;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    transition: all 0.15s ease;
+    flex-shrink: 0;
+}
+
+.marge-btn-logout:hover {
+    color: var(--marge-error);
+    background: var(--marge-error-bg);
+}
+
 /* Form */
 .marge-form {
     margin-bottom: 1.5rem;
@@ -311,6 +425,17 @@
 .marge-badge-admin {
     background: var(--marge-primary);
     color: white;
+}
+
+.marge-badge-github {
+    display: inline-flex;
+    align-items: center;
+    background: #24292e;
+    color: white;
+}
+
+.marge-theme-dark .marge-badge-github {
+    background: #6e7681;
 }
 
 .marge-badge-verified {

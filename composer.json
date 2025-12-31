@@ -13,6 +13,7 @@
         "inertiajs/inertia-laravel": "^2.0",
         "laravel/boost": "^1.8",
         "laravel/framework": "^12.0",
+        "laravel/socialite": "^5.24",
         "laravel/tinker": "^2.10.1",
         "league/commonmark": "^2.8",
         "lorisleiva/laravel-actions": "^2.9"

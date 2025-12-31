@@ -21,6 +21,7 @@ import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import {
     IconAlertTriangle,
+    IconBrandGithub,
     IconCheck,
     IconMail,
     IconPalette,
@@ -49,6 +50,9 @@ interface SettingsIndexProps {
         custom_css: string;
         enable_upvotes: boolean;
         enable_downvotes: boolean;
+        enable_github_login: boolean;
+        github_client_id: string | null;
+        github_configured: boolean;
         smtp_host: string | null;
         smtp_port: string;
         smtp_username: string | null;
@@ -82,6 +86,9 @@ export default function SettingsIndex({ settings }: SettingsIndexProps) {
         custom_css: settings.custom_css,
         enable_upvotes: settings.enable_upvotes,
         enable_downvotes: settings.enable_downvotes,
+        enable_github_login: settings.enable_github_login,
+        github_client_id: settings.github_client_id || '',
+        github_client_secret: '',
         smtp_host: settings.smtp_host || '',
         smtp_port: settings.smtp_port,
         smtp_username: settings.smtp_username || '',
@@ -144,6 +151,12 @@ export default function SettingsIndex({ settings }: SettingsIndexProps) {
                             leftSection={<IconShield size={16} />}
                         >
                             Moderation
+                        </Tabs.Tab>
+                        <Tabs.Tab
+                            value="auth"
+                            leftSection={<IconBrandGithub size={16} />}
+                        >
+                            Authentication
                         </Tabs.Tab>
                         <Tabs.Tab
                             value="email"
@@ -348,6 +361,80 @@ export default function SettingsIndex({ settings }: SettingsIndexProps) {
                                         setData('blocked_ips', e.target.value)
                                     }
                                     minRows={4}
+                                />
+                            </Stack>
+                        </Paper>
+                    </Tabs.Panel>
+
+                    <Tabs.Panel value="auth">
+                        <Paper withBorder p="md" radius="md">
+                            <Stack>
+                                <Text size="sm" c="dimmed" mb="xs">
+                                    Allow commenters to authenticate with their
+                                    GitHub account. Create an OAuth App at{' '}
+                                    <a
+                                        href="https://github.com/settings/developers"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                    >
+                                        github.com/settings/developers
+                                    </a>{' '}
+                                    and set the callback URL to:{' '}
+                                    <code>
+                                        {window.location.origin}
+                                        /auth/github/callback
+                                    </code>
+                                </Text>
+                                {settings.github_configured && (
+                                    <Alert color="green">
+                                        GitHub OAuth is configured. Leave secret
+                                        empty to keep existing.
+                                    </Alert>
+                                )}
+                                <TextInput
+                                    label="GitHub Client ID"
+                                    value={data.github_client_id}
+                                    onChange={(e) =>
+                                        setData(
+                                            'github_client_id',
+                                            e.target.value,
+                                        )
+                                    }
+                                />
+                                <PasswordInput
+                                    label="GitHub Client Secret"
+                                    value={data.github_client_secret}
+                                    onChange={(e) =>
+                                        setData(
+                                            'github_client_secret',
+                                            e.target.value,
+                                        )
+                                    }
+                                    placeholder={
+                                        settings.github_configured
+                                            ? '••••••••'
+                                            : ''
+                                    }
+                                />
+                                <Switch
+                                    label="Enable GitHub login for commenters"
+                                    description={
+                                        settings.github_configured ||
+                                        data.github_client_id
+                                            ? 'Allow commenters to authenticate via GitHub'
+                                            : 'Enter GitHub Client ID and Secret above first'
+                                    }
+                                    checked={data.enable_github_login}
+                                    disabled={
+                                        !settings.github_configured &&
+                                        !data.github_client_id
+                                    }
+                                    onChange={(e) =>
+                                        setData(
+                                            'enable_github_login',
+                                            e.target.checked,
+                                        )
+                                    }
                                 />
                             </Stack>
                         </Paper>

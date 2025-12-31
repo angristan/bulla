@@ -37,4 +37,12 @@ return [
         ],
     ],
 
+    // GitHub OAuth is configured dynamically from admin settings
+    // See CommenterAuthController::configureGitHubDriver()
+    'github' => [
+        'client_id' => null,
+        'client_secret' => null,
+        'redirect' => null,
+    ],
+
 ];

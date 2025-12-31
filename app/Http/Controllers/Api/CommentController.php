@@ -61,13 +61,19 @@ class CommentController extends Controller
         // Check if user is authenticated as admin via session
         $isAdmin = (bool) $request->session()->get('admin_authenticated', false);
 
+        // Get commenter session data (GitHub authenticated)
+        $commenter = $request->session()->get('commenter');
+
         try {
             $comment = CreateComment::run(
                 [
                     'uri' => urldecode($uri),
                     'parent_id' => $validated['parent_id'] ?? null,
-                    'author' => $validated['author'] ?? null,
-                    'email' => $validated['email'] ?? null,
+                    // Use commenter session data if available, otherwise use form data
+                    'author' => $commenter['name'] ?? $validated['author'] ?? null,
+                    'email' => $commenter['email'] ?? $validated['email'] ?? null,
+                    'github_id' => $commenter['github_id'] ?? null,
+                    'github_username' => $commenter['github_username'] ?? null,
                     'website' => $validated['website'] ?? null,
                     'body' => $validated['body'],
                     'notify_replies' => $validated['notify_replies'] ?? false,
@@ -82,13 +88,20 @@ class CommentController extends Controller
             return response()->json(['error' => $e->getMessage()], 422);
         }
 
+        // Use GitHub avatar if available, otherwise Gravatar
+        $avatarUrl = $comment->github_username
+            ? "https://github.com/{$comment->github_username}.png"
+            : ($comment->display_email
+                ? Gravatar::url($comment->display_email)
+                : Gravatar::urlForIp($comment->remote_addr, (string) $comment->thread_id));
+
         return response()->json([
             'id' => $comment->id,
             'author' => $comment->display_author,
             'is_admin' => $comment->is_admin,
-            'avatar' => $comment->display_email
-                ? Gravatar::url($comment->display_email)
-                : Gravatar::urlForIp($comment->remote_addr, (string) $comment->thread_id),
+            'is_github_user' => $comment->github_id !== null,
+            'github_username' => $comment->github_username,
+            'avatar' => $avatarUrl,
             'website' => $comment->website,
             'body_html' => $comment->body_html,
             'status' => $comment->status,
@@ -105,13 +118,19 @@ class CommentController extends Controller
      */
     public function show(Comment $comment): JsonResponse
     {
+        $avatarUrl = $comment->github_username
+            ? "https://github.com/{$comment->github_username}.png"
+            : ($comment->display_email
+                ? Gravatar::url($comment->display_email)
+                : Gravatar::urlForIp($comment->remote_addr, (string) $comment->thread_id));
+
         return response()->json([
             'id' => $comment->id,
             'author' => $comment->display_author,
             'is_admin' => $comment->is_admin,
-            'avatar' => $comment->display_email
-                ? Gravatar::url($comment->display_email)
-                : Gravatar::urlForIp($comment->remote_addr, (string) $comment->thread_id),
+            'is_github_user' => $comment->github_id !== null,
+            'github_username' => $comment->github_username,
+            'avatar' => $avatarUrl,
             'website' => $comment->website,
             'body_html' => $comment->body_html,
             'body_markdown' => $comment->body_markdown,
