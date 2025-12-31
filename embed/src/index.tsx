@@ -60,11 +60,12 @@ function autoInit() {
     const baseUrl = script.getAttribute('data-marge');
     if (!baseUrl) return;
 
-    const theme = script.getAttribute('data-marge-theme') as
-        | 'light'
-        | 'dark'
-        | 'auto'
-        | null;
+    const getTheme = () =>
+        script.getAttribute('data-marge-theme') as
+            | 'light'
+            | 'dark'
+            | 'auto'
+            | null;
     const guest = script.getAttribute('data-marge-guest') === 'true';
     const uri = script.getAttribute('data-marge-uri') || undefined;
     const sortAttr = script.getAttribute('data-marge-sort');
@@ -73,13 +74,30 @@ function autoInit() {
             ? (sortAttr as SortOrder)
             : undefined;
 
+    const doInit = () => {
+        const theme = getTheme();
+        init({ baseUrl, theme: theme || undefined, guest, uri, sort });
+    };
+
+    // Watch for theme attribute changes and re-render
+    const observer = new MutationObserver((mutations) => {
+        for (const mutation of mutations) {
+            if (
+                mutation.type === 'attributes' &&
+                mutation.attributeName === 'data-marge-theme'
+            ) {
+                doInit();
+                break;
+            }
+        }
+    });
+    observer.observe(script, { attributes: true });
+
     // Wait for DOM to be ready
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', () => {
-            init({ baseUrl, theme: theme || undefined, guest, uri, sort });
-        });
+        document.addEventListener('DOMContentLoaded', doInit);
     } else {
-        init({ baseUrl, theme: theme || undefined, guest, uri, sort });
+        doInit();
     }
 }
 

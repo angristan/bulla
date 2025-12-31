@@ -13,7 +13,7 @@ import {
     TextInput,
     Title,
 } from '@mantine/core';
-import { type FormEvent, useEffect, useState } from 'react';
+import { type FormEvent, useCallback, useEffect, useState } from 'react';
 
 export default function Setup() {
     const [active, setActive] = useState(0);
@@ -31,10 +31,13 @@ export default function Setup() {
         post('/admin/setup');
     };
 
-    const nextStep = () => setActive((current) => Math.min(current + 1, 3));
+    const nextStep = useCallback(
+        () => setActive((current) => Math.min(current + 1, 3)),
+        [],
+    );
     const prevStep = () => setActive((current) => Math.max(current - 1, 0));
 
-    const canProceed = () => {
+    const canProceed = useCallback(() => {
         switch (active) {
             case 0:
                 return data.site_name.length > 0 && data.site_url.length > 0;
@@ -48,7 +51,7 @@ export default function Setup() {
             default:
                 return true;
         }
-    };
+    }, [active, data]);
 
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
@@ -60,7 +63,7 @@ export default function Setup() {
 
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [active, data]);
+    }, [active, canProceed, nextStep]);
 
     return (
         <Container size={600} my={50}>

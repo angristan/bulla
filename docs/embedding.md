@@ -24,7 +24,7 @@ That's it! Marge will automatically initialize and load comments for the current
 | Attribute | Description | Default |
 |-----------|-------------|---------|
 | `data-marge` | **Required.** URL of your Marge instance | - |
-| `data-marge-theme` | Color theme: `light`, `dark`, `auto` | `auto` |
+| `data-marge-theme` | Color theme: `light`, `dark`, `auto` (reactive) | `auto` |
 | `data-marge-sort` | Comment sort order: `oldest`, `newest`, `popular` | `oldest` |
 
 ### Examples
@@ -64,6 +64,20 @@ That's it! Marge will automatically initialize and load comments for the current
 ></script>
 <div id="marge-thread"></div>
 ```
+
+#### Dynamic Theme Switching
+
+The `data-marge-theme` attribute is reactive. Change it at runtime to update the theme:
+
+```javascript
+// Switch to dark theme
+document.querySelector('script[data-marge]').setAttribute('data-marge-theme', 'dark');
+
+// Switch to light theme
+document.querySelector('script[data-marge]').setAttribute('data-marge-theme', 'light');
+```
+
+This is useful for syncing with your site's theme toggle.
 
 ## Manual Initialization
 

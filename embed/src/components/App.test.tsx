@@ -192,6 +192,26 @@ describe('App', () => {
         });
     });
 
+    it('updates theme reactively when prop changes', async () => {
+        const { rerender } = render(
+            <App baseUrl="https://example.com" uri="/test" theme="dark" />,
+        );
+
+        await waitFor(() => {
+            const container = document.querySelector('.marge-container');
+            expect(container).toHaveClass('marge-theme-dark');
+        });
+
+        rerender(
+            <App baseUrl="https://example.com" uri="/test" theme="light" />,
+        );
+
+        await waitFor(() => {
+            const container = document.querySelector('.marge-container');
+            expect(container).toHaveClass('marge-theme-light');
+        });
+    });
+
     it('renders footer with link to Marge', async () => {
         render(<App baseUrl="https://example.com" uri="/test" />);
 

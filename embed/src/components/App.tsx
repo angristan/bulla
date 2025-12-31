@@ -76,6 +76,19 @@ export default function App({
 
     const [effectiveTheme, setEffectiveTheme] = useState(getEffectiveTheme);
 
+    // Update effective theme when theme prop changes
+    useEffect(() => {
+        if (theme === 'auto') {
+            setEffectiveTheme(
+                window.matchMedia('(prefers-color-scheme: dark)').matches
+                    ? 'dark'
+                    : 'light',
+            );
+        } else {
+            setEffectiveTheme(theme);
+        }
+    }, [theme]);
+
     useEffect(() => {
         if (theme !== 'auto') return;
 
