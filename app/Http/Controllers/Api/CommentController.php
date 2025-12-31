@@ -28,7 +28,7 @@ class CommentController extends Controller
         $validated = $request->validate([
             'parent_id' => ['nullable', 'integer', 'exists:comments,id'],
             'author' => ['nullable', 'string', 'max:255'],
-            'email' => ['nullable', 'email', 'max:255'],
+            'email' => ['nullable', 'email', 'max:255', 'required_if:notify_replies,true'],
             'website' => ['nullable', 'string', 'max:512'],
             'body' => ['required', 'string', 'min:1', 'max:65535'],
             'notify_replies' => ['nullable', 'boolean'],

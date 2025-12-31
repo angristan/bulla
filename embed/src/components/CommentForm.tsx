@@ -111,9 +111,13 @@ export default function CommentForm({
                                     : 'Email (optional)'
                             }
                             value={email}
-                            onInput={(e) =>
-                                setEmail((e.target as HTMLInputElement).value)
-                            }
+                            onInput={(e) => {
+                                const newEmail = (e.target as HTMLInputElement).value;
+                                setEmail(newEmail);
+                                if (!newEmail.trim()) {
+                                    setNotifyReplies(false);
+                                }
+                            }}
                             required={config.require_email}
                         />
                     </div>
@@ -165,7 +169,10 @@ export default function CommentForm({
             />
 
             <div className="marge-form-footer">
-                <label className="marge-checkbox">
+                <label
+                    className="marge-checkbox"
+                    title={!email.trim() ? 'Enter an email to enable notifications' : undefined}
+                >
                     <input
                         type="checkbox"
                         checked={notifyReplies}
@@ -174,6 +181,7 @@ export default function CommentForm({
                                 (e.target as HTMLInputElement).checked,
                             )
                         }
+                        disabled={!email.trim()}
                     />
                     <span>Notify me of replies</span>
                 </label>
