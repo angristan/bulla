@@ -31,15 +31,10 @@ interface PreviewProps {
 }
 
 export default function Preview({ appUrl, threads }: PreviewProps) {
-    const [theme, setTheme] = useState('auto');
     const [viewMode, setViewMode] = useState('admin');
     const [selectedThread, setSelectedThread] = useState<string | null>(null);
     const containerRef = useRef<HTMLDivElement>(null);
-    const computedColorScheme = useComputedColorScheme('light');
-
-    // When theme is 'auto', use the admin panel's effective theme
-    const effectiveTheme =
-        theme === 'auto' ? computedColorScheme : (theme as 'light' | 'dark');
+    const theme = useComputedColorScheme('light');
 
     const threadOptions = [
         { value: '', label: 'New thread (preview-page)' },
@@ -74,7 +69,7 @@ export default function Preview({ appUrl, threads }: PreviewProps) {
         const script = document.createElement('script');
         script.src = `${appUrl}/embed/embed.js?t=${Date.now()}`;
         script.setAttribute('data-marge', appUrl);
-        script.setAttribute('data-marge-theme', effectiveTheme);
+        script.setAttribute('data-marge-theme', theme);
         script.setAttribute('data-marge-preview', 'true');
         if (viewMode === 'guest') {
             script.setAttribute('data-marge-guest', 'true');
@@ -91,7 +86,7 @@ export default function Preview({ appUrl, threads }: PreviewProps) {
                 scriptToRemove.remove();
             }
         };
-    }, [appUrl, effectiveTheme, viewMode, selectedThread]);
+    }, [appUrl, theme, viewMode, selectedThread]);
 
     return (
         <AdminLayout>
@@ -106,21 +101,6 @@ export default function Preview({ appUrl, threads }: PreviewProps) {
 
                     <Paper p="md" withBorder>
                         <Group gap="lg" align="flex-end" wrap="wrap">
-                            <div>
-                                <Text size="sm" fw={500} mb={4}>
-                                    Theme
-                                </Text>
-                                <SegmentedControl
-                                    size="xs"
-                                    value={theme}
-                                    onChange={setTheme}
-                                    data={[
-                                        { label: 'Auto', value: 'auto' },
-                                        { label: 'Light', value: 'light' },
-                                        { label: 'Dark', value: 'dark' },
-                                    ]}
-                                />
-                            </div>
                             <div>
                                 <Text size="sm" fw={500} mb={4}>
                                     View as
@@ -155,9 +135,7 @@ export default function Preview({ appUrl, threads }: PreviewProps) {
                         withBorder
                         style={{
                             backgroundColor:
-                                effectiveTheme === 'dark'
-                                    ? '#1a1b1e'
-                                    : '#ffffff',
+                                theme === 'dark' ? '#1a1b1e' : '#ffffff',
                         }}
                     >
                         <Box maw={720} mx="auto">
@@ -167,7 +145,7 @@ export default function Preview({ appUrl, threads }: PreviewProps) {
                                     mb="md"
                                     style={{
                                         color:
-                                            effectiveTheme === 'dark'
+                                            theme === 'dark'
                                                 ? '#c1c2c5'
                                                 : '#212529',
                                     }}
@@ -178,7 +156,7 @@ export default function Preview({ appUrl, threads }: PreviewProps) {
                                     mb="xl"
                                     style={{
                                         color:
-                                            effectiveTheme === 'dark'
+                                            theme === 'dark'
                                                 ? '#909296'
                                                 : '#495057',
                                     }}
@@ -193,7 +171,7 @@ export default function Preview({ appUrl, threads }: PreviewProps) {
                                     mb="xl"
                                     style={{
                                         color:
-                                            effectiveTheme === 'dark'
+                                            theme === 'dark'
                                                 ? '#909296'
                                                 : '#495057',
                                     }}
@@ -210,7 +188,7 @@ export default function Preview({ appUrl, threads }: PreviewProps) {
                                 mt="xl"
                                 pt="xl"
                                 style={{
-                                    borderTop: `1px solid ${effectiveTheme === 'dark' ? '#373a40' : '#dee2e6'}`,
+                                    borderTop: `1px solid ${theme === 'dark' ? '#373a40' : '#dee2e6'}`,
                                 }}
                             >
                                 <div ref={containerRef}>
