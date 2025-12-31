@@ -1,15 +1,16 @@
 /* Marge Embed Widget Styles */
 
 .marge-container {
-    --marge-bg: #ffffff;
-    --marge-text: #1a1a1a;
-    --marge-muted: #6b7280;
-    --marge-border: #e5e7eb;
+    --marge-bg: rgba(0, 0, 0, 0.03);
+    --marge-bg-elevated: rgba(0, 0, 0, 0.04);
+    --marge-text: rgba(0, 0, 0, 0.87);
+    --marge-muted: rgba(0, 0, 0, 0.5);
+    --marge-border: rgba(0, 0, 0, 0.08);
     --marge-primary: #3b82f6;
     --marge-primary-hover: #2563eb;
     --marge-success: #10b981;
     --marge-error: #ef4444;
-    --marge-error-bg: #fef2f2;
+    --marge-error-bg: rgba(239, 68, 68, 0.08);
 
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
     font-size: 14px;
@@ -18,13 +19,14 @@
 }
 
 .marge-theme-dark {
-    --marge-bg: #1f2937;
-    --marge-text: #f3f4f6;
-    --marge-muted: #9ca3af;
-    --marge-border: #374151;
+    --marge-bg: rgba(255, 255, 255, 0.04);
+    --marge-bg-elevated: rgba(255, 255, 255, 0.06);
+    --marge-text: rgba(255, 255, 255, 0.87);
+    --marge-muted: rgba(255, 255, 255, 0.5);
+    --marge-border: rgba(255, 255, 255, 0.08);
     --marge-primary: #60a5fa;
     --marge-primary-hover: #3b82f6;
-    --marge-error-bg: #7f1d1d;
+    --marge-error-bg: rgba(239, 68, 68, 0.12);
 }
 
 /* Header */
@@ -125,7 +127,7 @@
     gap: 0.5rem;
     width: 100%;
     padding: 0.5rem 0.75rem;
-    background: var(--marge-border);
+    background: var(--marge-bg-elevated);
     border-radius: 6px;
 }
 
@@ -299,7 +301,7 @@
 }
 
 .marge-btn-secondary:hover:not(:disabled) {
-    background: var(--marge-border);
+    background: var(--marge-bg-elevated);
 }
 
 /* Error */
@@ -333,6 +335,7 @@
 
 .marge-comment {
     padding: 1rem;
+    background: var(--marge-bg);
     border: 1px solid var(--marge-border);
     border-radius: 8px;
     margin-bottom: 1rem;
@@ -356,7 +359,7 @@
     width: 36px;
     height: 36px;
     border-radius: 50%;
-    background: var(--marge-border);
+    background: var(--marge-bg-elevated);
 }
 
 .marge-comment-meta {
@@ -458,7 +461,7 @@
 }
 
 .marge-comment-body code {
-    background: var(--marge-border);
+    background: var(--marge-bg-elevated);
     padding: 2px 6px;
     border-radius: 4px;
     font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
@@ -466,7 +469,7 @@
 }
 
 .marge-comment-body pre {
-    background: var(--marge-border);
+    background: var(--marge-bg-elevated);
     padding: 1rem;
     border-radius: 6px;
     overflow-x: auto;
