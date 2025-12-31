@@ -191,7 +191,7 @@ export default function SettingsIndex({ settings }: SettingsIndexProps) {
                                 />
                                 <TextInput
                                     label="Admin Email"
-                                    description="Used for Gravatar and moderation notifications"
+                                    description="Email used for Gravatar when posting as admin"
                                     type="email"
                                     value={data.admin_email}
                                     onChange={(e) =>

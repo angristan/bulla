@@ -25,6 +25,7 @@ describe('Admin Setup', function (): void {
             'site_name' => 'My Blog',
             'site_url' => 'https://myblog.com',
             'username' => 'admin',
+            'email' => 'admin@myblog.com',
             'password' => 'password123',
             'password_confirmation' => 'password123',
         ]);
@@ -48,7 +49,7 @@ describe('Admin Setup', function (): void {
     it('requires all fields', function (): void {
         $response = $this->post('/admin/setup', []);
 
-        $response->assertSessionHasErrors(['site_name', 'site_url', 'username', 'password']);
+        $response->assertSessionHasErrors(['site_name', 'site_url', 'username', 'email', 'password']);
     });
 
     it('validates password confirmation', function (): void {
@@ -56,6 +57,7 @@ describe('Admin Setup', function (): void {
             'site_name' => 'My Blog',
             'site_url' => 'https://myblog.com',
             'username' => 'admin',
+            'email' => 'admin@myblog.com',
             'password' => 'password123',
             'password_confirmation' => 'different',
         ]);
@@ -68,6 +70,7 @@ describe('Admin Setup', function (): void {
             'site_name' => 'My Blog',
             'site_url' => 'https://myblog.com',
             'username' => 'admin',
+            'email' => 'admin@myblog.com',
             'password' => 'short',
             'password_confirmation' => 'short',
         ]);
@@ -88,6 +91,7 @@ describe('Admin Setup', function (): void {
             'site_name' => 'My Blog',
             'site_url' => 'https://myblog.com',
             'username' => 'admin',
+            'email' => 'admin@myblog.com',
             'password' => 'password123',
             'password_confirmation' => 'password123',
         ]);
