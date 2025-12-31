@@ -63,14 +63,14 @@ class GetDashboardStats
     {
         $startDate = now()->subMonths(11)->startOfMonth();
 
-        // SQLite and PostgreSQL compatible month grouping
+        // Database-specific month grouping
         $driver = DB::getDriverName();
 
-        if ($driver === 'sqlite') {
-            $monthColumn = "strftime('%Y-%m', created_at)";
-        } else {
-            $monthColumn = "DATE_FORMAT(created_at, '%Y-%m')";
-        }
+        $monthColumn = match ($driver) {
+            'sqlite' => "strftime('%Y-%m', created_at)",
+            'pgsql' => "TO_CHAR(created_at, 'YYYY-MM')",
+            default => "DATE_FORMAT(created_at, '%Y-%m')",
+        };
 
         $results = Comment::where('created_at', '>=', $startDate)
             ->selectRaw("$monthColumn as month, count(*) as count")
