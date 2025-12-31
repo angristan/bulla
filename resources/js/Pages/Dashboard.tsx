@@ -121,6 +121,7 @@ export default function Dashboard({
                             h={250}
                             data={stats.comments_per_month}
                             dataKey="date"
+                            gridProps={{ yAxisId: 'left' }}
                             series={[
                                 {
                                     name: 'count',
