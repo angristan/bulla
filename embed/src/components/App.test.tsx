@@ -5,10 +5,12 @@ import App from './App';
 
 vi.mock('../api', () => {
     return {
-        default: vi.fn().mockImplementation(() => ({
-            getConfig: vi.fn(),
-            getComments: vi.fn(),
-        })),
+        default: vi.fn().mockImplementation(function () {
+            return {
+                getConfig: vi.fn(),
+                getComments: vi.fn(),
+            };
+        }),
     };
 });
 
@@ -46,7 +48,9 @@ describe('App', () => {
             getConfig: vi.fn().mockResolvedValue(mockConfig),
             getComments: vi.fn().mockResolvedValue(mockThread),
         };
-        vi.mocked(ApiModule.default).mockImplementation(() => mockApi as any);
+        vi.mocked(ApiModule.default).mockImplementation(function () {
+            return mockApi as any;
+        });
     });
 
     afterEach(() => {
