@@ -10,7 +10,7 @@ In reply to your comment:
 > {{ Str::limit(strip_tags($parentComment->body_html), 150) }}
 
 <x-mail::button :url="$threadUrl">
-View Thread
+View Reply
 </x-mail::button>
 
 ---

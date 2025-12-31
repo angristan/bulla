@@ -107,6 +107,22 @@ export default function App({
         loadData();
     }, [loadData]);
 
+    // Handle URL hash on initial load to scroll to comment
+    useEffect(() => {
+        if (!loading && data) {
+            const hash = window.location.hash;
+            if (hash?.startsWith('#comment-')) {
+                const commentId = Number.parseInt(
+                    hash.replace('#comment-', ''),
+                    10,
+                );
+                if (!Number.isNaN(commentId)) {
+                    scrollToComment(commentId);
+                }
+            }
+        }
+    }, [loading, data, scrollToComment]);
+
     // Determine effective theme
     const getEffectiveTheme = (): 'light' | 'dark' => {
         if (theme === 'auto') {

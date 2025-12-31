@@ -34,7 +34,9 @@ class ReplyNotificationMail extends Mailable
     public function content(): Content
     {
         $unsubscribeUrl = url("/unsubscribe/{$this->subscription->unsubscribe_token}");
-        $threadUrl = $this->parentComment->thread->url ?? url("/#comment-{$this->parentComment->id}");
+        $baseUrl = $this->reply->thread->url
+            ?? rtrim(\App\Models\Setting::getValue('site_url', ''), '/').$this->reply->thread->uri;
+        $threadUrl = "{$baseUrl}#comment-{$this->reply->id}";
 
         return new Content(
             markdown: 'emails.reply-notification',

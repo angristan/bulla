@@ -18,6 +18,7 @@ import {
     IconArrowLeft,
     IconCheck,
     IconClock,
+    IconExternalLink,
     IconMail,
     IconThumbUp,
     IconTrash,
@@ -44,6 +45,7 @@ interface CommentShowProps {
             id: number;
             uri: string;
             title: string | null;
+            url: string | null;
         };
         parent: {
             id: number;
@@ -226,6 +228,24 @@ export default function CommentShow({ comment }: CommentShowProps) {
                             Replies:
                         </Text>
                         <Text size="sm">{comment.replies_count}</Text>
+                    </Group>
+                    <Group>
+                        <Text fw={500} size="sm" w={100}>
+                            Link:
+                        </Text>
+                        <Anchor
+                            href={`${comment.thread.url}#comment-${comment.id}`}
+                            target="_blank"
+                            size="sm"
+                            style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: 4,
+                            }}
+                        >
+                            View on site
+                            <IconExternalLink size={14} />
+                        </Anchor>
                     </Group>
                 </Stack>
             </Paper>

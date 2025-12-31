@@ -389,6 +389,16 @@
     color: var(--bulla-muted);
 }
 
+.bulla-date-link {
+    color: inherit;
+    text-decoration: none;
+    transition: color 0.15s ease;
+}
+
+.bulla-date-link:hover {
+    color: var(--bulla-primary);
+}
+
 .bulla-reply-to {
     font-size: 12px;
     color: var(--bulla-muted);

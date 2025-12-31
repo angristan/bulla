@@ -20,7 +20,7 @@ Approve
 Delete
 </x-mail::button>
 
-Or [view in admin panel]({{ $adminUrl }}) for more options.
+[View in admin panel]({{ $adminUrl }}) | [View on site]({{ $threadUrl }})
 
 Thanks,<br>
 {{ $siteName }}

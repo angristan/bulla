@@ -16,6 +16,7 @@ A self-hosted comment system for static sites and blogs.
 - **GitHub login** - Optional GitHub authentication for commenters
 - **Email notifications** - Notify authors when they receive replies
 - **Voting** - Optional upvotes and downvotes with duplicate prevention
+- **Deep linking** - Link directly to any comment with `#comment-{id}`
 - **Moderation** - Approve, spam, delete from admin panel or email
 - **Admin comments** - Post as admin from your site when logged in
 - **Spam protection** - Honeypot, rate limiting, blocked words (no 3rd party)

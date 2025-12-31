@@ -38,6 +38,9 @@ class ModerationNotificationMail extends Mailable
         $approveUrl = url("/moderate/{$this->comment->id}/approve/{$this->moderationToken}");
         $deleteUrl = url("/moderate/{$this->comment->id}/delete/{$this->moderationToken}");
         $adminUrl = url("/admin/comments/{$this->comment->id}");
+        $baseUrl = $this->comment->thread->url
+            ?? rtrim(\App\Models\Setting::getValue('site_url', ''), '/').$this->comment->thread->uri;
+        $threadUrl = "{$baseUrl}#comment-{$this->comment->id}";
 
         return new Content(
             markdown: 'emails.moderation-notification',
@@ -46,6 +49,7 @@ class ModerationNotificationMail extends Mailable
                 'approveUrl' => $approveUrl,
                 'deleteUrl' => $deleteUrl,
                 'adminUrl' => $adminUrl,
+                'threadUrl' => $threadUrl,
                 'siteName' => \App\Models\Setting::getValue('site_name', 'Comments'),
             ],
         );

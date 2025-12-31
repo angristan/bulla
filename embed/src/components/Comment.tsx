@@ -100,9 +100,18 @@ export default function Comment({
         }
     };
 
+    const copyDeepLink = (e: MouseEvent) => {
+        e.preventDefault();
+        const url = `${window.location.href.split('#')[0]}#comment-${comment.id}`;
+        navigator.clipboard.writeText(url);
+        // Update URL without triggering navigation
+        window.history.replaceState(null, '', `#comment-${comment.id}`);
+    };
+
     return (
         <div
             className="bulla-comment"
+            id={`comment-${comment.id}`}
             data-depth={visualDepth}
             data-comment-id={comment.id}
         >
@@ -169,7 +178,14 @@ export default function Comment({
                         )}
                     </span>
                     <span className="bulla-date">
-                        {formatDate(comment.created_at)}
+                        <a
+                            href={`#comment-${comment.id}`}
+                            className="bulla-date-link"
+                            onClick={copyDeepLink}
+                            title="Copy link to this comment"
+                        >
+                            {formatDate(comment.created_at)}
+                        </a>
                         {comment.parent_author &&
                             visualDepth >= config.max_depth && (
                                 <>

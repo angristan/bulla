@@ -69,6 +69,8 @@ class CommentsController extends Controller
                     'id' => $comment->thread->id,
                     'uri' => $comment->thread->uri,
                     'title' => $comment->thread->title,
+                    'url' => $comment->thread->url
+                        ?? rtrim(\App\Models\Setting::getValue('site_url', ''), '/').$comment->thread->uri,
                 ],
                 'parent' => $comment->parent ? [
                     'id' => $comment->parent->id,

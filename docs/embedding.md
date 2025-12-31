@@ -183,6 +183,22 @@ For more control, Bulla uses CSS custom properties. The widget uses opacity-base
 }
 ```
 
+## Deep Linking
+
+Link directly to any comment using the `#comment-{id}` anchor:
+
+```
+https://yourblog.com/post#comment-123
+```
+
+When a visitor opens a URL with a comment anchor, the page automatically scrolls to and highlights that comment.
+
+**Features:**
+- Click on any comment's date to copy its deep link URL
+- The URL hash updates without reloading the page
+- Email notifications link directly to the relevant comment
+- Admin panel shows a "View on site" link for each comment
+
 ## RSS/Atom Feeds
 
 Bulla provides Atom feeds for syndication:
