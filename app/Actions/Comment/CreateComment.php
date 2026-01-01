@@ -104,8 +104,8 @@ class CreateComment
             }
         }
 
-        // Telegram notification
-        SendTelegramNotification::run($comment);
+        // Telegram notification (queued)
+        SendTelegramNotification::dispatch($comment);
     }
 
     /**

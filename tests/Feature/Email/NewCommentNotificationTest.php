@@ -34,7 +34,7 @@ class NewCommentNotificationTest extends TestCase
 
         $this->assertNotNull($token);
 
-        Mail::assertSent(NewCommentNotificationMail::class, function ($mail) {
+        Mail::assertQueued(NewCommentNotificationMail::class, function ($mail) {
             return $mail->hasTo('admin@example.com');
         });
     }
@@ -53,7 +53,7 @@ class NewCommentNotificationTest extends TestCase
         $token = SendNewCommentNotification::run($comment);
 
         $this->assertNull($token);
-        Mail::assertNothingSent();
+        Mail::assertNothingQueued();
     }
 
     public function test_does_not_send_notification_for_admin_comments(): void
@@ -71,7 +71,7 @@ class NewCommentNotificationTest extends TestCase
         $token = SendNewCommentNotification::run($comment);
 
         $this->assertNull($token);
-        Mail::assertNothingSent();
+        Mail::assertNothingQueued();
     }
 
     public function test_stores_moderation_token_on_comment(): void
@@ -110,7 +110,7 @@ class NewCommentNotificationTest extends TestCase
 
         SendNewCommentNotification::run($comment);
 
-        Mail::assertSent(NewCommentNotificationMail::class, function ($mail) {
+        Mail::assertQueued(NewCommentNotificationMail::class, function ($mail) {
             return $mail->envelope()->subject === 'New comment (pending) - My Blog';
         });
     }
@@ -131,7 +131,7 @@ class NewCommentNotificationTest extends TestCase
 
         SendNewCommentNotification::run($comment);
 
-        Mail::assertSent(NewCommentNotificationMail::class, function ($mail) {
+        Mail::assertQueued(NewCommentNotificationMail::class, function ($mail) {
             return $mail->envelope()->subject === 'New comment - My Blog';
         });
     }

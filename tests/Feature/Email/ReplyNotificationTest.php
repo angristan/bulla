@@ -36,7 +36,7 @@ class ReplyNotificationTest extends TestCase
 
         SendReplyNotification::run($reply);
 
-        Mail::assertSent(ReplyNotificationMail::class, function ($mail) use ($parentComment) {
+        Mail::assertQueued(ReplyNotificationMail::class, function ($mail) use ($parentComment) {
             return $mail->hasTo($parentComment->email);
         });
     }
@@ -59,7 +59,7 @@ class ReplyNotificationTest extends TestCase
 
         SendReplyNotification::run($reply);
 
-        Mail::assertNothingSent();
+        Mail::assertNothingQueued();
     }
 
     public function test_does_not_send_notification_if_parent_has_no_email(): void
@@ -80,7 +80,7 @@ class ReplyNotificationTest extends TestCase
 
         SendReplyNotification::run($reply);
 
-        Mail::assertNothingSent();
+        Mail::assertNothingQueued();
     }
 
     public function test_does_not_send_notification_for_top_level_comment(): void
@@ -95,7 +95,7 @@ class ReplyNotificationTest extends TestCase
 
         SendReplyNotification::run($comment);
 
-        Mail::assertNothingSent();
+        Mail::assertNothingQueued();
     }
 
     public function test_does_not_send_notification_for_self_reply(): void
@@ -117,7 +117,7 @@ class ReplyNotificationTest extends TestCase
 
         SendReplyNotification::run($reply);
 
-        Mail::assertNothingSent();
+        Mail::assertNothingQueued();
     }
 
     public function test_does_not_send_notification_if_unsubscribed(): void
@@ -147,7 +147,7 @@ class ReplyNotificationTest extends TestCase
 
         SendReplyNotification::run($reply);
 
-        Mail::assertNothingSent();
+        Mail::assertNothingQueued();
     }
 
     public function test_creates_subscription_when_sending_notification(): void

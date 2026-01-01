@@ -8,6 +8,7 @@ use App\Mail\NewCommentNotificationMail;
 use App\Models\Comment;
 use App\Models\Setting;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 use Lorisleiva\Actions\Concerns\AsAction;
 
 class SendNewCommentNotification
@@ -27,13 +28,14 @@ class SendNewCommentNotification
             return null;
         }
 
-        $mail = new NewCommentNotificationMail($comment);
+        // Generate token and store on comment before queuing
+        $moderationToken = Str::random(64);
+        $comment->update(['moderation_token' => $moderationToken]);
 
-        // Store the token on the comment for validation (for delete action)
-        $comment->update(['moderation_token' => $mail->moderationToken]);
+        Mail::to($adminEmail)->queue(
+            new NewCommentNotificationMail($comment, $moderationToken)
+        );
 
-        Mail::to($adminEmail)->send($mail);
-
-        return $mail->moderationToken;
+        return $moderationToken;
     }
 }

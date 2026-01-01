@@ -52,7 +52,7 @@ class SendReplyNotification
             return;
         }
 
-        Mail::to($parentComment->email)->send(
+        Mail::to($parentComment->email)->queue(
             new ReplyNotificationMail($reply, $parentComment, $subscription)
         );
     }

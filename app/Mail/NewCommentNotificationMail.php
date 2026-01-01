@@ -11,19 +11,15 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Str;
 
 class NewCommentNotificationMail extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public string $moderationToken;
-
     public function __construct(
         public Comment $comment,
-    ) {
-        $this->moderationToken = Str::random(64);
-    }
+        public string $moderationToken,
+    ) {}
 
     public function envelope(): Envelope
     {
