@@ -130,7 +130,7 @@ All configuration is done through the admin panel after initial setup. Key setti
 - **Blocked words:** Spam keyword list
 - **Accent color:** Customize the primary color for buttons and links
 - **Custom CSS:** Inject custom styles into the embed widget
-- **SMTP:** Email notification settings
+- **Allowed origins:** Control which domains can embed comments
 - **GitHub OAuth:** Client ID and secret for commenter authentication
 
 ## License

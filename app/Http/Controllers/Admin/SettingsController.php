@@ -68,14 +68,6 @@ class SettingsController extends Controller
             'custom_css' => ['nullable', 'string', 'max:50000'],
             'accent_color' => ['nullable', 'string', 'max:7', 'regex:/^#[0-9A-Fa-f]{6}$/'],
             'hide_branding' => ['nullable', 'boolean'],
-
-            // Email
-            'smtp_host' => ['nullable', 'string', 'max:255'],
-            'smtp_port' => ['nullable', 'integer', 'min:1', 'max:65535'],
-            'smtp_username' => ['nullable', 'string', 'max:255'],
-            'smtp_password' => ['nullable', 'string', 'max:255'],
-            'smtp_from_address' => ['nullable', 'email', 'max:255'],
-            'smtp_from_name' => ['nullable', 'string', 'max:255'],
         ]);
 
         // Convert booleans to strings

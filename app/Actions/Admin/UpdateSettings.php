@@ -41,15 +41,9 @@ class UpdateSettings
             'enable_github_login',
             'github_client_id',
             'hide_branding',
-            'smtp_host',
-            'smtp_port',
-            'smtp_username',
-            'smtp_from_address',
-            'smtp_from_name',
         ];
 
         $encryptedSettings = [
-            'smtp_password',
             'github_client_secret',
         ];
 
@@ -110,14 +104,6 @@ class UpdateSettings
             'enable_github_login' => Setting::getValue('enable_github_login', 'false') === 'true',
             'github_client_id' => Setting::getValue('github_client_id'),
             'github_configured' => Setting::getValue('github_client_id') !== null && Setting::getValue('github_client_secret') !== null,
-
-            // Email (without password)
-            'smtp_host' => Setting::getValue('smtp_host'),
-            'smtp_port' => Setting::getValue('smtp_port', '587'),
-            'smtp_username' => Setting::getValue('smtp_username'),
-            'smtp_from_address' => Setting::getValue('smtp_from_address'),
-            'smtp_from_name' => Setting::getValue('smtp_from_name'),
-            'smtp_configured' => Setting::getValue('smtp_host') !== null,
         ];
     }
 }

@@ -62,19 +62,6 @@ describe('Admin Settings', function (): void {
         expect(Setting::getValue('blocked_words'))->toBe("spam\nviagra");
     });
 
-    it('updates SMTP settings', function (): void {
-        $response = $this->post('/admin/settings', [
-            'smtp_host' => 'smtp.example.com',
-            'smtp_port' => 587,
-            'smtp_username' => 'user@example.com',
-            'smtp_from_address' => 'noreply@example.com',
-        ]);
-
-        $response->assertRedirect();
-        expect(Setting::getValue('smtp_host'))->toBe('smtp.example.com');
-        expect(Setting::getValue('smtp_port'))->toBe('587');
-    });
-
     it('validates moderation mode values', function (): void {
         $response = $this->post('/admin/settings', [
             'moderation_mode' => 'invalid',

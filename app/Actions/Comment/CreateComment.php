@@ -92,8 +92,8 @@ class CreateComment
 
     private function sendEmails(Comment $comment): void
     {
-        // Only send emails if SMTP is configured
-        if (! Setting::getValue('smtp_host')) {
+        // Only send emails if mail is configured (not using log driver)
+        if (config('mail.default') === 'log') {
             return;
         }
 

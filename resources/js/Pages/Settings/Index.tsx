@@ -23,7 +23,6 @@ import {
     IconAlertTriangle,
     IconBrandGithub,
     IconCheck,
-    IconMail,
     IconPalette,
     IconSettings,
     IconShield,
@@ -58,16 +57,10 @@ interface SettingsIndexProps {
         enable_github_login: boolean;
         github_client_id: string | null;
         github_configured: boolean;
-        smtp_host: string | null;
-        smtp_port: string;
-        smtp_username: string | null;
-        smtp_from_address: string | null;
-        smtp_from_name: string | null;
-        smtp_configured: boolean;
     };
 }
 
-type SettingsTab = 'general' | 'moderation' | 'auth' | 'email' | 'appearance';
+type SettingsTab = 'general' | 'moderation' | 'auth' | 'appearance';
 
 export default function SettingsIndex({ settings }: SettingsIndexProps) {
     const [activeTab, setActiveTab] = useUrlState<SettingsTab>(
@@ -103,12 +96,6 @@ export default function SettingsIndex({ settings }: SettingsIndexProps) {
         enable_github_login: settings.enable_github_login,
         github_client_id: settings.github_client_id || '',
         github_client_secret: '',
-        smtp_host: settings.smtp_host || '',
-        smtp_port: settings.smtp_port,
-        smtp_username: settings.smtp_username || '',
-        smtp_password: '',
-        smtp_from_address: settings.smtp_from_address || '',
-        smtp_from_name: settings.smtp_from_name || '',
     });
 
     const handleSubmit = (e: FormEvent) => {
@@ -174,12 +161,6 @@ export default function SettingsIndex({ settings }: SettingsIndexProps) {
                             leftSection={<IconBrandGithub size={16} />}
                         >
                             Authentication
-                        </Tabs.Tab>
-                        <Tabs.Tab
-                            value="email"
-                            leftSection={<IconMail size={16} />}
-                        >
-                            Email
                         </Tabs.Tab>
                         <Tabs.Tab
                             value="appearance"
@@ -462,72 +443,6 @@ export default function SettingsIndex({ settings }: SettingsIndexProps) {
                                         setData(
                                             'enable_github_login',
                                             e.target.checked,
-                                        )
-                                    }
-                                />
-                            </Stack>
-                        </Paper>
-                    </Tabs.Panel>
-
-                    <Tabs.Panel value="email">
-                        <Paper withBorder p="md" radius="md">
-                            <Stack>
-                                {settings.smtp_configured && (
-                                    <Alert color="green">
-                                        SMTP is configured. Leave password empty
-                                        to keep existing.
-                                    </Alert>
-                                )}
-                                <TextInput
-                                    label="SMTP Host"
-                                    value={data.smtp_host}
-                                    onChange={(e) =>
-                                        setData('smtp_host', e.target.value)
-                                    }
-                                />
-                                <TextInput
-                                    label="SMTP Port"
-                                    value={data.smtp_port}
-                                    onChange={(e) =>
-                                        setData('smtp_port', e.target.value)
-                                    }
-                                />
-                                <TextInput
-                                    label="SMTP Username"
-                                    value={data.smtp_username}
-                                    onChange={(e) =>
-                                        setData('smtp_username', e.target.value)
-                                    }
-                                />
-                                <PasswordInput
-                                    label="SMTP Password"
-                                    value={data.smtp_password}
-                                    onChange={(e) =>
-                                        setData('smtp_password', e.target.value)
-                                    }
-                                    placeholder={
-                                        settings.smtp_configured
-                                            ? '••••••••'
-                                            : ''
-                                    }
-                                />
-                                <TextInput
-                                    label="From Address"
-                                    value={data.smtp_from_address}
-                                    onChange={(e) =>
-                                        setData(
-                                            'smtp_from_address',
-                                            e.target.value,
-                                        )
-                                    }
-                                />
-                                <TextInput
-                                    label="From Name"
-                                    value={data.smtp_from_name}
-                                    onChange={(e) =>
-                                        setData(
-                                            'smtp_from_name',
-                                            e.target.value,
                                         )
                                     }
                                 />

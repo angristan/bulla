@@ -85,7 +85,6 @@ docker compose up -d
 1. Visit `https://your-domain.com/admin/setup`
 2. Set your site name
 3. Create admin credentials
-4. (Optional) Configure email settings
 
 ## GitHub Login (Optional)
 
