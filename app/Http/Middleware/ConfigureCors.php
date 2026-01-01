@@ -24,11 +24,20 @@ class ConfigureCors
             return $next($request);
         }
 
-        if ($origins = Setting::getValue('allowed_origins')) {
-            $parsed = $origins === '*'
+        // Get allowed origins, falling back to site_url for security
+        $origins = Setting::getValue('allowed_origins') ?: Setting::getValue('site_url', '');
+
+        if ($origins) {
+            $isWildcard = $origins === '*';
+            $parsed = $isWildcard
                 ? ['*']
                 : array_map('trim', explode(',', $origins));
             config(['cors.allowed_origins' => $parsed]);
+
+            // Disable credentials for wildcard origins to prevent CSRF-like attacks
+            if ($isWildcard) {
+                config(['cors.supports_credentials' => false]);
+            }
         }
 
         return $next($request);

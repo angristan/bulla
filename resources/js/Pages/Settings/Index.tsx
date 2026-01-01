@@ -221,13 +221,18 @@ export default function SettingsIndex({ settings }: SettingsIndexProps) {
                                 />
                                 <TextInput
                                     label="Allowed Origins"
-                                    description="Comma-separated list of domains allowed to embed comments (* for all)"
+                                    description="Comma-separated list of domains allowed to embed comments. Defaults to Site URL if empty."
                                     value={data.allowed_origins}
                                     onChange={(e) =>
                                         setData(
                                             'allowed_origins',
                                             e.target.value,
                                         )
+                                    }
+                                    error={
+                                        data.allowed_origins.trim() === '*'
+                                            ? 'Warning: Wildcard (*) allows any site to embed comments. Authentication cookies will be disabled for security.'
+                                            : undefined
                                     }
                                 />
                             </Stack>
