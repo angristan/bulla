@@ -120,7 +120,7 @@ class UpdateSettings
             // GitHub OAuth
             'enable_github_login' => Setting::getValue('enable_github_login', 'false') === 'true',
             'github_client_id' => Setting::getValue('github_client_id'),
-            'github_configured' => Setting::getValue('github_client_id') !== null && Setting::getValue('github_client_secret') !== null,
+            'github_client_secret' => Setting::getValue('github_client_secret'),
 
             // Telegram
             'enable_telegram' => Setting::getValue('enable_telegram', 'false') === 'true',

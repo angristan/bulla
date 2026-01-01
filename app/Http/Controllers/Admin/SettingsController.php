@@ -87,6 +87,13 @@ class SettingsController extends Controller
             $validated['enable_downvotes'] = 'false';
         }
 
+        // GitHub login requires both client ID and secret
+        if (isset($validated['enable_github_login']) && $validated['enable_github_login'] === 'true') {
+            if (empty($validated['github_client_id']) || empty($validated['github_client_secret'])) {
+                $validated['enable_github_login'] = 'false';
+            }
+        }
+
         UpdateSettings::run($validated);
 
         return back()->with('success', 'Settings updated.');

@@ -1,4 +1,4 @@
-import { router, useForm, usePage } from '@inertiajs/react';
+import { router, useForm } from '@inertiajs/react';
 import {
     Alert,
     Button,
@@ -29,16 +29,9 @@ import {
     IconShield,
     IconTrash,
 } from '@tabler/icons-react';
-import { type FormEvent, useEffect, useState } from 'react';
+import { type FormEvent, useState } from 'react';
 import { useUrlState } from '@/hooks/useUrlState';
 import AdminLayout from '@/Layouts/AdminLayout';
-
-type PageProps = {
-    flash: {
-        success?: string;
-        error?: string;
-    };
-};
 
 interface SettingsIndexProps {
     settings: {
@@ -63,7 +56,7 @@ interface SettingsIndexProps {
         enable_downvotes: boolean;
         enable_github_login: boolean;
         github_client_id: string | null;
-        github_configured: boolean;
+        github_client_secret: string | null;
         enable_telegram: boolean;
         telegram_chat_id: string | null;
         telegram_bot_token: string | null;
@@ -93,21 +86,6 @@ export default function SettingsIndex({ settings }: SettingsIndexProps) {
     const [wipeConfirmation, setWipeConfirmation] = useState('');
     const [isWiping, setIsWiping] = useState(false);
     const [isTelegramAction, setIsTelegramAction] = useState(false);
-    const [telegramResult, setTelegramResult] = useState<{
-        type: 'success' | 'error';
-        message: string;
-    } | null>(null);
-    const { flash } = usePage<PageProps>().props;
-
-    // Handle flash messages from Telegram actions
-    useEffect(() => {
-        if (flash?.success) {
-            setTelegramResult({ type: 'success', message: flash.success });
-        }
-        if (flash?.error) {
-            setTelegramResult({ type: 'error', message: flash.error });
-        }
-    }, [flash?.success, flash?.error]);
 
     const { data, setData, post, processing } = useForm({
         site_name: settings.site_name,
@@ -131,7 +109,7 @@ export default function SettingsIndex({ settings }: SettingsIndexProps) {
         enable_downvotes: settings.enable_downvotes,
         enable_github_login: settings.enable_github_login,
         github_client_id: settings.github_client_id || '',
-        github_client_secret: '',
+        github_client_secret: settings.github_client_secret || '',
         enable_telegram: settings.enable_telegram,
         telegram_chat_id: settings.telegram_chat_id || '',
         telegram_bot_token: settings.telegram_bot_token || '',
@@ -172,6 +150,27 @@ export default function SettingsIndex({ settings }: SettingsIndexProps) {
         });
     };
 
+    const showTelegramResult = (page: { props: Record<string, unknown> }) => {
+        const flash = page.props.flash as
+            | { success?: string; error?: string }
+            | undefined;
+        if (flash?.success) {
+            notifications.show({
+                title: 'Telegram',
+                message: flash.success,
+                color: 'green',
+                icon: <IconCheck size={16} />,
+            });
+        }
+        if (flash?.error) {
+            notifications.show({
+                title: 'Telegram',
+                message: flash.error,
+                color: 'red',
+            });
+        }
+    };
+
     const handleTelegramSetupWebhook = () => {
         setIsTelegramAction(true);
         router.post(
@@ -179,6 +178,7 @@ export default function SettingsIndex({ settings }: SettingsIndexProps) {
             {},
             {
                 preserveScroll: true,
+                onSuccess: showTelegramResult,
                 onFinish: () => setIsTelegramAction(false),
             },
         );
@@ -191,6 +191,7 @@ export default function SettingsIndex({ settings }: SettingsIndexProps) {
             {},
             {
                 preserveScroll: true,
+                onSuccess: showTelegramResult,
                 onFinish: () => setIsTelegramAction(false),
             },
         );
@@ -203,6 +204,7 @@ export default function SettingsIndex({ settings }: SettingsIndexProps) {
             {},
             {
                 preserveScroll: true,
+                onSuccess: showTelegramResult,
                 onFinish: () => setIsTelegramAction(false),
             },
         );
@@ -457,7 +459,7 @@ export default function SettingsIndex({ settings }: SettingsIndexProps) {
                     <Tabs.Panel value="auth">
                         <Paper withBorder p="md" radius="md">
                             <Stack>
-                                <Text size="sm" c="dimmed" mb="xs">
+                                <Text size="sm" c="dimmed">
                                     Allow commenters to authenticate with their
                                     GitHub account. Create an OAuth App at{' '}
                                     <a
@@ -473,49 +475,49 @@ export default function SettingsIndex({ settings }: SettingsIndexProps) {
                                         /auth/github/callback
                                     </code>
                                 </Text>
-                                {settings.github_configured && (
-                                    <Alert color="green">
-                                        GitHub OAuth is configured. Leave secret
-                                        empty to keep existing.
-                                    </Alert>
-                                )}
                                 <TextInput
                                     label="GitHub Client ID"
                                     value={data.github_client_id}
-                                    onChange={(e) =>
-                                        setData(
-                                            'github_client_id',
-                                            e.target.value,
-                                        )
-                                    }
+                                    onChange={(e) => {
+                                        const value = e.target.value;
+                                        setData((prev) => ({
+                                            ...prev,
+                                            github_client_id: value,
+                                            enable_github_login:
+                                                value &&
+                                                prev.github_client_secret
+                                                    ? prev.enable_github_login
+                                                    : false,
+                                        }));
+                                    }}
                                 />
                                 <PasswordInput
                                     label="GitHub Client Secret"
                                     value={data.github_client_secret}
-                                    onChange={(e) =>
-                                        setData(
-                                            'github_client_secret',
-                                            e.target.value,
-                                        )
-                                    }
-                                    placeholder={
-                                        settings.github_configured
-                                            ? '••••••••'
-                                            : ''
-                                    }
+                                    onChange={(e) => {
+                                        const value = e.target.value;
+                                        setData((prev) => ({
+                                            ...prev,
+                                            github_client_secret: value,
+                                            enable_github_login:
+                                                prev.github_client_id && value
+                                                    ? prev.enable_github_login
+                                                    : false,
+                                        }));
+                                    }}
                                 />
                                 <Switch
                                     label="Enable GitHub login for commenters"
                                     description={
-                                        settings.github_configured ||
-                                        data.github_client_id
+                                        data.github_client_id &&
+                                        data.github_client_secret
                                             ? 'Allow commenters to authenticate via GitHub'
                                             : 'Enter GitHub Client ID and Secret above first'
                                     }
                                     checked={data.enable_github_login}
                                     disabled={
-                                        !settings.github_configured &&
-                                        !data.github_client_id
+                                        !data.github_client_id ||
+                                        !data.github_client_secret
                                     }
                                     onChange={(e) =>
                                         setData(
@@ -645,20 +647,6 @@ export default function SettingsIndex({ settings }: SettingsIndexProps) {
                                         </Button>
                                     )}
                                 </Group>
-                                {telegramResult && (
-                                    <Alert
-                                        color={
-                                            telegramResult.type === 'success'
-                                                ? 'green'
-                                                : 'red'
-                                        }
-                                        mt="sm"
-                                        withCloseButton
-                                        onClose={() => setTelegramResult(null)}
-                                    >
-                                        {telegramResult.message}
-                                    </Alert>
-                                )}
                                 {settings.telegram_webhook.configured && (
                                     <Alert
                                         color="blue"
