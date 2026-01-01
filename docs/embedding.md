@@ -26,6 +26,7 @@ That's it! Bulla will automatically initialize and load comments for the current
 | `data-bulla` | **Required.** URL of your Bulla instance | - |
 | `data-bulla-theme` | Color theme: `light`, `dark`, `auto` (reactive) | `auto` |
 | `data-bulla-sort` | Comment sort order: `oldest`, `newest`, `popular` | `oldest` |
+| `data-bulla-uri` | Custom page identifier | `window.location.pathname` |
 
 ### Examples
 
@@ -106,13 +107,30 @@ For more control, initialize manually:
 
 By default, Bulla uses `window.location.pathname` to identify the page. All comments on `/blog/my-post` will be grouped together regardless of query strings or anchors.
 
-Override this with the `uri` option if needed:
+Override this with the `data-bulla-uri` attribute:
+
+```html
+<script
+  src="https://comments.example.com/embed/embed.js"
+  data-bulla="https://comments.example.com"
+  data-bulla-uri="/custom/path"
+  async
+></script>
+```
+
+Or with the `uri` option in manual initialization:
 
 ```javascript
 Bulla.init({
   baseUrl: 'https://comments.example.com',
-  uri: '/custom/path'  // Your custom identifier
+  uri: '/custom/path'
 });
+```
+
+You can also set `data-uri` on the container element as a fallback:
+
+```html
+<div id="bulla-thread" data-uri="/custom/path"></div>
 ```
 
 ## Comment Counts
