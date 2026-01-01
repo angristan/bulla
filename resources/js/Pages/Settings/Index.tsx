@@ -24,6 +24,7 @@ import {
     IconBrandGithub,
     IconBrandTelegram,
     IconCheck,
+    IconMail,
     IconPalette,
     IconSettings,
     IconShield,
@@ -66,6 +67,14 @@ interface SettingsIndexProps {
             url: string | null;
             error: string | null;
         };
+        enable_email: boolean;
+        smtp_host: string | null;
+        smtp_port: string;
+        smtp_username: string | null;
+        smtp_password: string | null;
+        smtp_from_address: string | null;
+        smtp_from_name: string | null;
+        smtp_encryption: string;
     };
 }
 
@@ -74,6 +83,7 @@ type SettingsTab =
     | 'moderation'
     | 'auth'
     | 'telegram'
+    | 'email'
     | 'appearance'
     | 'danger';
 
@@ -87,6 +97,7 @@ export default function SettingsIndex({ settings }: SettingsIndexProps) {
     const [wipeConfirmation, setWipeConfirmation] = useState('');
     const [isWiping, setIsWiping] = useState(false);
     const [isTelegramAction, setIsTelegramAction] = useState(false);
+    const [isEmailAction, setIsEmailAction] = useState(false);
 
     const { data, setData, post, processing } = useForm({
         site_name: settings.site_name,
@@ -115,6 +126,14 @@ export default function SettingsIndex({ settings }: SettingsIndexProps) {
         telegram_chat_id: settings.telegram_chat_id || '',
         telegram_bot_token: settings.telegram_bot_token || '',
         telegram_notify_upvotes: settings.telegram_notify_upvotes,
+        enable_email: settings.enable_email,
+        smtp_host: settings.smtp_host || '',
+        smtp_port: settings.smtp_port || '587',
+        smtp_username: settings.smtp_username || '',
+        smtp_password: settings.smtp_password || '',
+        smtp_from_address: settings.smtp_from_address || '',
+        smtp_from_name: settings.smtp_from_name || '',
+        smtp_encryption: settings.smtp_encryption || 'tls',
     });
 
     const handleSubmit = (e: FormEvent) => {
@@ -211,6 +230,40 @@ export default function SettingsIndex({ settings }: SettingsIndexProps) {
         );
     };
 
+    const showEmailResult = (page: { props: Record<string, unknown> }) => {
+        const flash = page.props.flash as
+            | { success?: string; error?: string }
+            | undefined;
+        if (flash?.success) {
+            notifications.show({
+                title: 'Email',
+                message: flash.success,
+                color: 'green',
+                icon: <IconCheck size={16} />,
+            });
+        }
+        if (flash?.error) {
+            notifications.show({
+                title: 'Email',
+                message: flash.error,
+                color: 'red',
+            });
+        }
+    };
+
+    const handleEmailTest = () => {
+        setIsEmailAction(true);
+        router.post(
+            '/admin/settings/email/test',
+            {},
+            {
+                preserveScroll: true,
+                onSuccess: showEmailResult,
+                onFinish: () => setIsEmailAction(false),
+            },
+        );
+    };
+
     return (
         <AdminLayout>
             <Title order={2} mb="lg">
@@ -236,10 +289,16 @@ export default function SettingsIndex({ settings }: SettingsIndexProps) {
                             Moderation
                         </Tabs.Tab>
                         <Tabs.Tab
-                            value="auth"
-                            leftSection={<IconBrandGithub size={16} />}
+                            value="appearance"
+                            leftSection={<IconPalette size={16} />}
                         >
-                            Authentication
+                            Appearance
+                        </Tabs.Tab>
+                        <Tabs.Tab
+                            value="email"
+                            leftSection={<IconMail size={16} />}
+                        >
+                            Email
                         </Tabs.Tab>
                         <Tabs.Tab
                             value="telegram"
@@ -248,10 +307,10 @@ export default function SettingsIndex({ settings }: SettingsIndexProps) {
                             Telegram
                         </Tabs.Tab>
                         <Tabs.Tab
-                            value="appearance"
-                            leftSection={<IconPalette size={16} />}
+                            value="auth"
+                            leftSection={<IconBrandGithub size={16} />}
                         >
-                            Appearance
+                            GitHub
                         </Tabs.Tab>
                         <Tabs.Tab
                             value="danger"
@@ -464,80 +523,6 @@ export default function SettingsIndex({ settings }: SettingsIndexProps) {
                         </Paper>
                     </Tabs.Panel>
 
-                    <Tabs.Panel value="auth">
-                        <Paper withBorder p="md" radius="md">
-                            <Stack>
-                                <Text size="sm" c="dimmed">
-                                    Allow commenters to authenticate with their
-                                    GitHub account. Create an OAuth App at{' '}
-                                    <a
-                                        href="https://github.com/settings/developers"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                    >
-                                        github.com/settings/developers
-                                    </a>{' '}
-                                    and set the callback URL to:{' '}
-                                    <code>
-                                        {window.location.origin}
-                                        /auth/github/callback
-                                    </code>
-                                </Text>
-                                <TextInput
-                                    label="GitHub Client ID"
-                                    value={data.github_client_id}
-                                    onChange={(e) => {
-                                        const value = e.target.value;
-                                        setData((prev) => ({
-                                            ...prev,
-                                            github_client_id: value,
-                                            enable_github_login:
-                                                value &&
-                                                prev.github_client_secret
-                                                    ? prev.enable_github_login
-                                                    : false,
-                                        }));
-                                    }}
-                                />
-                                <PasswordInput
-                                    label="GitHub Client Secret"
-                                    value={data.github_client_secret}
-                                    onChange={(e) => {
-                                        const value = e.target.value;
-                                        setData((prev) => ({
-                                            ...prev,
-                                            github_client_secret: value,
-                                            enable_github_login:
-                                                prev.github_client_id && value
-                                                    ? prev.enable_github_login
-                                                    : false,
-                                        }));
-                                    }}
-                                />
-                                <Switch
-                                    label="Enable GitHub login for commenters"
-                                    description={
-                                        data.github_client_id &&
-                                        data.github_client_secret
-                                            ? 'Allow commenters to authenticate via GitHub'
-                                            : 'Enter GitHub Client ID and Secret above first'
-                                    }
-                                    checked={data.enable_github_login}
-                                    disabled={
-                                        !data.github_client_id ||
-                                        !data.github_client_secret
-                                    }
-                                    onChange={(e) =>
-                                        setData(
-                                            'enable_github_login',
-                                            e.target.checked,
-                                        )
-                                    }
-                                />
-                            </Stack>
-                        </Paper>
-                    </Tabs.Panel>
-
                     <Tabs.Panel value="telegram">
                         <Paper withBorder p="md" radius="md">
                             <Stack>
@@ -681,6 +666,214 @@ export default function SettingsIndex({ settings }: SettingsIndexProps) {
                                         {settings.telegram_webhook.error}
                                     </Alert>
                                 )}
+                            </Stack>
+                        </Paper>
+                    </Tabs.Panel>
+
+                    <Tabs.Panel value="email">
+                        <Paper withBorder p="md" radius="md">
+                            <Stack>
+                                <Text size="sm" c="dimmed">
+                                    Configure SMTP settings to send email
+                                    notifications when someone replies to a
+                                    comment. Emails are sent to users who
+                                    subscribe to reply notifications.
+                                </Text>
+                                <TextInput
+                                    label="SMTP Host"
+                                    description="SMTP server hostname (e.g., smtp.mailgun.org)"
+                                    value={data.smtp_host}
+                                    onChange={(e) =>
+                                        setData('smtp_host', e.target.value)
+                                    }
+                                />
+                                <NumberInput
+                                    label="SMTP Port"
+                                    description="Usually 587 for TLS, 465 for SSL, or 25 for unencrypted"
+                                    value={Number(data.smtp_port)}
+                                    onChange={(value) =>
+                                        setData(
+                                            'smtp_port',
+                                            String(value || 587),
+                                        )
+                                    }
+                                    min={1}
+                                    max={65535}
+                                />
+                                <Select
+                                    label="Encryption"
+                                    description="Connection security method"
+                                    data={[
+                                        {
+                                            value: 'tls',
+                                            label: 'STARTTLS (port 587)',
+                                        },
+                                        {
+                                            value: 'ssl',
+                                            label: 'SSL/TLS (port 465)',
+                                        },
+                                        {
+                                            value: 'none',
+                                            label: 'None (port 25)',
+                                        },
+                                    ]}
+                                    value={data.smtp_encryption}
+                                    onChange={(value) =>
+                                        setData(
+                                            'smtp_encryption',
+                                            value || 'tls',
+                                        )
+                                    }
+                                />
+                                <TextInput
+                                    label="SMTP Username"
+                                    description="Authentication username"
+                                    value={data.smtp_username}
+                                    onChange={(e) =>
+                                        setData('smtp_username', e.target.value)
+                                    }
+                                />
+                                <PasswordInput
+                                    label="SMTP Password"
+                                    description="Authentication password"
+                                    value={data.smtp_password}
+                                    onChange={(e) =>
+                                        setData('smtp_password', e.target.value)
+                                    }
+                                />
+                                <TextInput
+                                    label="From Address"
+                                    description="Email address that notifications are sent from"
+                                    type="email"
+                                    value={data.smtp_from_address}
+                                    onChange={(e) =>
+                                        setData(
+                                            'smtp_from_address',
+                                            e.target.value,
+                                        )
+                                    }
+                                />
+                                <TextInput
+                                    label="From Name"
+                                    description="Display name for the sender (defaults to site name)"
+                                    value={data.smtp_from_name}
+                                    onChange={(e) =>
+                                        setData(
+                                            'smtp_from_name',
+                                            e.target.value,
+                                        )
+                                    }
+                                />
+                                <Switch
+                                    label="Enable email notifications"
+                                    description={
+                                        data.smtp_host
+                                            ? 'Send reply notifications via email'
+                                            : 'Enter SMTP settings above first'
+                                    }
+                                    checked={data.enable_email}
+                                    disabled={!data.smtp_host}
+                                    onChange={(e) =>
+                                        setData(
+                                            'enable_email',
+                                            e.target.checked,
+                                        )
+                                    }
+                                />
+                                {data.smtp_host && !settings.smtp_host && (
+                                    <Alert color="yellow">
+                                        Save settings first to use the Test
+                                        button.
+                                    </Alert>
+                                )}
+                                <Group mt="md">
+                                    <Button
+                                        variant="light"
+                                        onClick={handleEmailTest}
+                                        loading={isEmailAction}
+                                        disabled={!settings.smtp_host}
+                                    >
+                                        Send Test Email
+                                    </Button>
+                                </Group>
+                                <Text size="xs" c="dimmed">
+                                    Test email will be sent to the admin email
+                                    address configured in General settings.
+                                </Text>
+                            </Stack>
+                        </Paper>
+                    </Tabs.Panel>
+
+                    <Tabs.Panel value="auth">
+                        <Paper withBorder p="md" radius="md">
+                            <Stack>
+                                <Text size="sm" c="dimmed">
+                                    Allow commenters to authenticate with their
+                                    GitHub account. Create an OAuth App at{' '}
+                                    <a
+                                        href="https://github.com/settings/developers"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                    >
+                                        github.com/settings/developers
+                                    </a>{' '}
+                                    and set the callback URL to:{' '}
+                                    <code>
+                                        {window.location.origin}
+                                        /auth/github/callback
+                                    </code>
+                                </Text>
+                                <TextInput
+                                    label="GitHub Client ID"
+                                    value={data.github_client_id}
+                                    onChange={(e) => {
+                                        const value = e.target.value;
+                                        setData((prev) => ({
+                                            ...prev,
+                                            github_client_id: value,
+                                            enable_github_login:
+                                                value &&
+                                                prev.github_client_secret
+                                                    ? prev.enable_github_login
+                                                    : false,
+                                        }));
+                                    }}
+                                />
+                                <PasswordInput
+                                    label="GitHub Client Secret"
+                                    value={data.github_client_secret}
+                                    onChange={(e) => {
+                                        const value = e.target.value;
+                                        setData((prev) => ({
+                                            ...prev,
+                                            github_client_secret: value,
+                                            enable_github_login:
+                                                prev.github_client_id && value
+                                                    ? prev.enable_github_login
+                                                    : false,
+                                        }));
+                                    }}
+                                />
+                                <Switch
+                                    label="Enable GitHub login for commenters"
+                                    description={
+                                        data.github_client_id &&
+                                        data.github_client_secret
+                                            ? 'Allow commenters to authenticate via GitHub'
+                                            : 'Enter GitHub Client ID and Secret above first'
+                                    }
+                                    checked={data.enable_github_login}
+                                    disabled={
+                                        !data.github_client_id ||
+                                        !data.github_client_secret
+                                    }
+                                    onChange={(e) =>
+                                        setData(
+                                            'enable_github_login',
+                                            e.target.checked,
+                                        )
+                                    }
+                                />
                             </Stack>
                         </Paper>
                     </Tabs.Panel>

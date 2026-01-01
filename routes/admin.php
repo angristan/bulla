@@ -46,6 +46,9 @@ Route::middleware([RedirectIfSetupRequired::class, AdminAuthenticated::class])->
     Route::post('/settings/telegram/remove-webhook', [SettingsController::class, 'removeTelegramWebhook'])->name('admin.settings.telegram.remove-webhook');
     Route::post('/settings/telegram/test', [SettingsController::class, 'testTelegram'])->name('admin.settings.telegram.test');
 
+    // Email
+    Route::post('/settings/email/test', [SettingsController::class, 'testEmail'])->name('admin.settings.email.test');
+
     // Import/Export
     Route::get('/import', [ImportController::class, 'index'])->name('admin.import.index');
     Route::post('/import/isso', [ImportController::class, 'importIsso'])->name('admin.import.isso');

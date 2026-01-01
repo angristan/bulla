@@ -73,10 +73,20 @@ class SettingsController extends Controller
             'telegram_chat_id' => ['nullable', 'string', 'max:64'],
             'enable_telegram' => ['nullable', 'boolean'],
             'telegram_notify_upvotes' => ['nullable', 'boolean'],
+
+            // Email
+            'smtp_host' => ['nullable', 'string', 'max:255'],
+            'smtp_port' => ['nullable', 'integer', 'min:1', 'max:65535'],
+            'smtp_username' => ['nullable', 'string', 'max:255'],
+            'smtp_password' => ['nullable', 'string', 'max:255'],
+            'smtp_from_address' => ['nullable', 'email', 'max:255'],
+            'smtp_from_name' => ['nullable', 'string', 'max:255'],
+            'smtp_encryption' => ['nullable', 'string', 'in:tls,ssl,none'],
+            'enable_email' => ['nullable', 'boolean'],
         ]);
 
         // Convert booleans to strings
-        foreach (['require_author', 'require_email', 'enable_upvotes', 'enable_downvotes', 'enable_github_login', 'hide_branding', 'enable_telegram', 'telegram_notify_upvotes'] as $key) {
+        foreach (['require_author', 'require_email', 'enable_upvotes', 'enable_downvotes', 'enable_github_login', 'hide_branding', 'enable_telegram', 'telegram_notify_upvotes', 'enable_email'] as $key) {
             if (isset($validated[$key])) {
                 $validated[$key] = $validated[$key] ? 'true' : 'false';
             }
@@ -214,6 +224,20 @@ class SettingsController extends Controller
     public function testTelegram(): RedirectResponse
     {
         $result = \App\Actions\Telegram\SendTelegramNotification::make()->sendTest();
+
+        if ($result['success']) {
+            return back()->with('success', $result['message']);
+        }
+
+        return back()->with('error', $result['message']);
+    }
+
+    /**
+     * Send a test email.
+     */
+    public function testEmail(): RedirectResponse
+    {
+        $result = \App\Actions\Email\SendTestEmail::run();
 
         if ($result['success']) {
             return back()->with('success', $result['message']);

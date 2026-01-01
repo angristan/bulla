@@ -44,12 +44,21 @@ class UpdateSettings
             'telegram_chat_id',
             'enable_telegram',
             'telegram_notify_upvotes',
+            // Email
+            'smtp_host',
+            'smtp_port',
+            'smtp_username',
+            'smtp_from_address',
+            'smtp_from_name',
+            'smtp_encryption',
+            'enable_email',
         ];
 
         $encryptedSettings = [
             'github_client_secret',
             'telegram_bot_token',
             'telegram_webhook_secret',
+            'smtp_password',
         ];
 
         // Settings that should have trailing slashes removed
@@ -128,6 +137,16 @@ class UpdateSettings
             'telegram_bot_token' => Setting::getValue('telegram_bot_token'),
             'telegram_notify_upvotes' => Setting::getValue('telegram_notify_upvotes', 'false') === 'true',
             'telegram_webhook' => \App\Actions\Telegram\SetupTelegramWebhook::make()->getInfo(),
+
+            // Email
+            'enable_email' => Setting::getValue('enable_email', 'false') === 'true',
+            'smtp_host' => Setting::getValue('smtp_host'),
+            'smtp_port' => Setting::getValue('smtp_port', '587'),
+            'smtp_username' => Setting::getValue('smtp_username'),
+            'smtp_password' => Setting::getValue('smtp_password'),
+            'smtp_from_address' => Setting::getValue('smtp_from_address'),
+            'smtp_from_name' => Setting::getValue('smtp_from_name'),
+            'smtp_encryption' => Setting::getValue('smtp_encryption', 'tls'),
         ];
     }
 }
