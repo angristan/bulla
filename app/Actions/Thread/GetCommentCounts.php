@@ -20,20 +20,33 @@ class GetCommentCounts
      */
     public function handle(array $uris): array
     {
-        // Normalize URIs
+        // Normalize URIs (strip trailing slashes)
         $normalizedUris = array_map(fn ($uri) => '/'.trim($uri, '/'), $uris);
 
-        $threads = Thread::whereIn('uri', $normalizedUris)
+        // Build list of URIs to check (both with and without trailing slash)
+        $urisToCheck = [];
+        foreach ($normalizedUris as $uri) {
+            $urisToCheck[] = $uri;
+            $urisToCheck[] = $uri.'/';
+        }
+
+        $threads = Thread::whereIn('uri', $urisToCheck)
             ->withCount(['comments' => function ($query): void {
                 $query->where('status', Comment::STATUS_APPROVED);
             }])
-            ->get()
-            ->keyBy('uri');
+            ->get();
+
+        // Build lookup map for both variants
+        $threadsByUri = [];
+        foreach ($threads as $thread) {
+            $threadsByUri[$thread->uri] = $thread;
+        }
 
         $counts = [];
         foreach ($normalizedUris as $i => $uri) {
             $originalUri = $uris[$i];
-            $thread = $threads->get($uri);
+            // Check both with and without trailing slash
+            $thread = $threadsByUri[$uri] ?? $threadsByUri[$uri.'/'] ?? null;
             $counts[$originalUri] = $thread ? $thread->comments_count : 0;
         }
 

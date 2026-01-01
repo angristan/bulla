@@ -92,4 +92,23 @@ describe('POST /api/counts', function (): void {
         $data = $response->json();
         expect($data['test'])->toBe($data['/test/']);
     });
+
+    it('finds thread regardless of trailing slash in database', function (): void {
+        // Thread stored WITH trailing slash
+        $thread = Thread::create(['uri' => '/blog/post/']);
+        Comment::create([
+            'thread_id' => $thread->id,
+            'body_markdown' => 'Test',
+            'body_html' => '<p>Test</p>',
+            'status' => 'approved',
+        ]);
+
+        // Request WITHOUT trailing slash should still find it
+        $response = $this->postJson('/api/counts', [
+            'uris' => ['/blog/post'],
+        ]);
+
+        $response->assertOk()
+            ->assertJson(['/blog/post' => 1]);
+    });
 });
