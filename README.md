@@ -127,6 +127,10 @@ All configuration is done through the admin panel after initial setup. Key setti
 - **Allowed origins:** Control which domains can embed comments
 - **GitHub OAuth:** Client ID and secret for commenter authentication
 
+## Acknowledgements
+
+Inspired by [Isso](https://github.com/isso-comments/isso).
+
 ## License
 
 MIT
