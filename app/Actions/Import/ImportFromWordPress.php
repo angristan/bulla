@@ -36,7 +36,7 @@ class ImportFromWordPress
             throw new \InvalidArgumentException("WordPress export file not found: {$wxrPath}");
         }
 
-        $xml = simplexml_load_file($wxrPath);
+        $xml = simplexml_load_file($wxrPath, 'SimpleXMLElement', LIBXML_NONET);
         if ($xml === false) {
             throw new \InvalidArgumentException('Invalid XML file');
         }

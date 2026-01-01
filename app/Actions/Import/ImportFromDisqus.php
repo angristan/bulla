@@ -36,7 +36,7 @@ class ImportFromDisqus
             throw new \InvalidArgumentException("Disqus export file not found: {$disqusPath}");
         }
 
-        $xml = simplexml_load_file($disqusPath);
+        $xml = simplexml_load_file($disqusPath, 'SimpleXMLElement', LIBXML_NONET);
         if ($xml === false) {
             throw new \InvalidArgumentException('Invalid XML file');
         }
