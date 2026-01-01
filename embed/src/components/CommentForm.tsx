@@ -24,11 +24,36 @@ export default function CommentForm({
     onSubmit,
     onConfigRefresh,
 }: CommentFormProps) {
-    const [author, setAuthor] = useState('');
-    const [email, setEmail] = useState('');
-    const [website, setWebsite] = useState('');
+    const [author, setAuthor] = useState(() => {
+        try {
+            return localStorage.getItem('bulla_author') || '';
+        } catch {
+            return '';
+        }
+    });
+    const [email, setEmail] = useState(() => {
+        try {
+            return localStorage.getItem('bulla_email') || '';
+        } catch {
+            return '';
+        }
+    });
+    const [website, setWebsite] = useState(() => {
+        try {
+            return localStorage.getItem('bulla_website') || '';
+        } catch {
+            return '';
+        }
+    });
     const [body, setBody] = useState('');
-    const [notifyReplies, setNotifyReplies] = useState(false);
+    const [notifyReplies, setNotifyReplies] = useState(() => {
+        try {
+            const savedEmail = localStorage.getItem('bulla_email');
+            return savedEmail ? savedEmail.trim().length > 0 : false;
+        } catch {
+            return false;
+        }
+    });
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [previewMode, setPreviewMode] = useState(false);
@@ -69,11 +94,22 @@ export default function CommentForm({
                 timestamp: config.timestamp,
             });
 
+            // Save commenter info to localStorage for future visits
+            try {
+                if (author) localStorage.setItem('bulla_author', author);
+                if (email) localStorage.setItem('bulla_email', email);
+                if (website) {
+                    localStorage.setItem('bulla_website', website);
+                } else {
+                    localStorage.removeItem('bulla_website');
+                }
+            } catch {
+                // localStorage not available
+            }
+
             setBody('');
-            setAuthor('');
-            setEmail('');
-            setWebsite('');
-            setNotifyReplies(false);
+            // Don't clear author/email/website - keep them for future comments
+            setNotifyReplies(email ? email.trim().length > 0 : false);
             onSubmit(result.id);
         } catch (err) {
             setError(

@@ -45,11 +45,13 @@ describe('CommentForm', () => {
         mockApi = createMockApi();
         onSubmit = vi.fn();
         onConfigRefresh = vi.fn();
+        localStorage.clear();
     });
 
     afterEach(() => {
         cleanup();
         vi.clearAllMocks();
+        localStorage.clear();
     });
 
     it('renders the comment form', () => {
@@ -392,6 +394,165 @@ describe('CommentForm', () => {
 
         await waitFor(() => {
             expect(screen.getByText('Validation failed')).toBeInTheDocument();
+        });
+    });
+
+    describe('localStorage persistence', () => {
+        it('loads saved values from localStorage on mount', () => {
+            localStorage.setItem('bulla_author', 'Saved Name');
+            localStorage.setItem('bulla_email', 'saved@example.com');
+            localStorage.setItem('bulla_website', 'https://saved.com');
+
+            render(
+                <CommentForm
+                    api={mockApi as any}
+                    config={createMockConfig()}
+                    uri="/test"
+                    onSubmit={onSubmit}
+                    onConfigRefresh={onConfigRefresh}
+                />,
+            );
+
+            expect(screen.getByPlaceholderText(/Name/)).toHaveValue(
+                'Saved Name',
+            );
+            expect(screen.getByPlaceholderText(/Email/)).toHaveValue(
+                'saved@example.com',
+            );
+            expect(screen.getByPlaceholderText(/Website/)).toHaveValue(
+                'https://saved.com',
+            );
+        });
+
+        it('enables notify checkbox when email is loaded from localStorage', () => {
+            localStorage.setItem('bulla_email', 'saved@example.com');
+
+            render(
+                <CommentForm
+                    api={mockApi as any}
+                    config={createMockConfig()}
+                    uri="/test"
+                    onSubmit={onSubmit}
+                    onConfigRefresh={onConfigRefresh}
+                />,
+            );
+
+            const checkbox = screen.getByRole('checkbox');
+            expect(checkbox).not.toBeDisabled();
+            expect(checkbox).toBeChecked();
+        });
+
+        it('saves values to localStorage on successful submit', async () => {
+            render(
+                <CommentForm
+                    api={mockApi as any}
+                    config={createMockConfig()}
+                    uri="/test"
+                    onSubmit={onSubmit}
+                    onConfigRefresh={onConfigRefresh}
+                />,
+            );
+
+            fireEvent.input(screen.getByPlaceholderText(/Name/), {
+                target: { value: 'New Name' },
+            });
+            fireEvent.input(screen.getByPlaceholderText(/Email/), {
+                target: { value: 'new@example.com' },
+            });
+            fireEvent.input(screen.getByPlaceholderText(/Website/), {
+                target: { value: 'https://new.com' },
+            });
+            fireEvent.input(screen.getByPlaceholderText(/Write your comment/), {
+                target: { value: 'Test comment' },
+            });
+
+            fireEvent.click(
+                screen.getByRole('button', { name: 'Post Comment' }),
+            );
+
+            await waitFor(() => {
+                expect(onSubmit).toHaveBeenCalled();
+            });
+
+            expect(localStorage.getItem('bulla_author')).toBe('New Name');
+            expect(localStorage.getItem('bulla_email')).toBe('new@example.com');
+            expect(localStorage.getItem('bulla_website')).toBe(
+                'https://new.com',
+            );
+        });
+
+        it('preserves identity fields after successful submit', async () => {
+            render(
+                <CommentForm
+                    api={mockApi as any}
+                    config={createMockConfig()}
+                    uri="/test"
+                    onSubmit={onSubmit}
+                    onConfigRefresh={onConfigRefresh}
+                />,
+            );
+
+            fireEvent.input(screen.getByPlaceholderText(/Name/), {
+                target: { value: 'Test Name' },
+            });
+            fireEvent.input(screen.getByPlaceholderText(/Email/), {
+                target: { value: 'test@example.com' },
+            });
+            fireEvent.input(screen.getByPlaceholderText(/Write your comment/), {
+                target: { value: 'Test comment' },
+            });
+
+            fireEvent.click(
+                screen.getByRole('button', { name: 'Post Comment' }),
+            );
+
+            await waitFor(() => {
+                expect(onSubmit).toHaveBeenCalled();
+            });
+
+            // Identity fields should be preserved
+            expect(screen.getByPlaceholderText(/Name/)).toHaveValue(
+                'Test Name',
+            );
+            expect(screen.getByPlaceholderText(/Email/)).toHaveValue(
+                'test@example.com',
+            );
+            // Comment body should be cleared
+            expect(
+                screen.getByPlaceholderText(/Write your comment/),
+            ).toHaveValue('');
+        });
+
+        it('removes website from localStorage when submitted empty', async () => {
+            localStorage.setItem('bulla_website', 'https://old.com');
+
+            render(
+                <CommentForm
+                    api={mockApi as any}
+                    config={createMockConfig()}
+                    uri="/test"
+                    onSubmit={onSubmit}
+                    onConfigRefresh={onConfigRefresh}
+                />,
+            );
+
+            // Clear the website field
+            fireEvent.input(screen.getByPlaceholderText(/Website/), {
+                target: { value: '' },
+            });
+            fireEvent.input(screen.getByPlaceholderText(/Write your comment/), {
+                target: { value: 'Test comment' },
+            });
+
+            fireEvent.click(
+                screen.getByRole('button', { name: 'Post Comment' }),
+            );
+
+            await waitFor(() => {
+                expect(onSubmit).toHaveBeenCalled();
+            });
+
+            expect(localStorage.getItem('bulla_website')).toBeNull();
         });
     });
 });
