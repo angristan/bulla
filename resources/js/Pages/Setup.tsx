@@ -90,8 +90,8 @@ export default function Setup() {
                                 />
                                 <TextInput
                                     label="Site URL"
-                                    description="The URL where Bulla is hosted"
-                                    placeholder="https://comments.myblog.com"
+                                    description="The URL of your website where comments will be embedded"
+                                    placeholder="https://myblog.com"
                                     value={data.site_url}
                                     onChange={(e) =>
                                         setData('site_url', e.target.value)

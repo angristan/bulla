@@ -334,7 +334,7 @@ export default function SettingsIndex({ settings }: SettingsIndexProps) {
                                 />
                                 <TextInput
                                     label="Site URL"
-                                    description="The URL of your site (used for links in emails)"
+                                    description="The URL of your website where comments are embedded"
                                     value={data.site_url}
                                     onChange={(e) =>
                                         setData('site_url', e.target.value)
