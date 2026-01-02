@@ -8,23 +8,34 @@ A self-hosted comment system for static sites and blogs.
 
 ## Features
 
-- **Simple embedding** - Single script tag to add comments
-- **Markdown support** - GitHub-flavored markdown with live preview
-- **Nested replies** - Configurable nesting depth
-- **Sorting** - Sort by oldest, newest, or popular (by votes)
-- **Dark mode** - Light, dark, or auto (follows system preference)
-- **GitHub login** - Optional GitHub authentication for commenters
-- **Email notifications** - Notify authors when they receive replies
-- **Telegram notifications** - Get notified, reply, and moderate via Telegram
-- **Voting** - Optional upvotes and downvotes with duplicate prevention
-- **Deep linking** - Link directly to any comment with `#comment-{id}`
-- **Moderation** - Approve, spam, delete from admin panel or email
-- **Admin comments** - Post as admin from your site when logged in, claim past comments
-- **Spam protection** - Honeypot, rate limiting, blocked words (no 3rd party)
-- **Import/Export** - Migrate from isso, Disqus, or WordPress
-- **Atom feeds** - Subscribe to comment threads
-- **Dual database support** - SQLite (default) or PostgreSQL
-- **Lightweight embed** - ~10KB gzipped
+- **Comments**
+  - Markdown support with GitHub-flavored syntax and live preview
+  - Nested replies with configurable depth
+  - Sorting by oldest, newest, or popular (by votes)
+  - Voting with optional upvotes and downvotes
+  - Editing within a configurable time window
+  - Deep linking to any comment with `#comment-{id}`
+- **Appearance**
+  - Dark mode (light, dark, or auto)
+  - Customization with accent color, custom CSS, and branding options
+  - Avatars via Gravatar, GitHub, or imgproxy
+- **Authentication**
+  - Optional GitHub login for commenters
+  - Admin comments with badge, claim past comments by email/name
+- **Notifications**
+  - Email notifications for replies with unsubscribe support
+  - Telegram bot for notifications, replies, and moderation
+- **Moderation**
+  - Approve, spam, delete from admin panel, email, or Telegram
+  - Spam protection with honeypot, rate limiting, and blocked words
+- **Data**
+  - Import from isso, Disqus, or WordPress
+  - Export to JSON
+  - Atom feeds for comment threads
+- **Self-hosting**
+  - Single Docker container with SQLite (PostgreSQL optional)
+  - Simple embedding with a single script tag
+  - Lightweight embed (~10KB gzipped)
 
 ![](./docs/assets/embed.png)
 
@@ -133,6 +144,10 @@ Tests run against both SQLite and PostgreSQL in CI.
 
 ## Features
 
+### Admin
+
+![](./docs/assets/admin.png)
+
 ### Importing Comments
 
 Bulla supports importing from:
@@ -148,6 +163,30 @@ To import: Go to Admin > Settings > Import, select your platform, and upload the
 After importing, use the "Claim Admin Comments" feature in Settings to mark your past comments as admin by matching email or author name.
 
 ![](./docs/assets/claim.png)
+
+### Moderation
+
+Bulla offers multiple moderation options:
+
+- **Admin Panel:** Approve, delete, or mark comments as spam directly from the admin interface.
+- **Email:** Receive moderation links in notification emails to approve, delete, or mark comments as spam without logging in.
+- **Telegram Bot:** Moderate comments via Telegram commands.
+
+### Admin moderation panel
+
+Comments can be moderated from the admin panel. You can filter comments by status (pending, approved, spam, deleted), search by author or content, and sort. Each comment has buttons to approve, delete, or mark as spam.
+
+![](./docs/assets/comments-admin.png)
+
+A few knobs in the settings allow you to configure moderation behavior, such as enabling pre-moderation for all comments.
+
+![](./docs/assets/moderation.png)
+
+### Email Notifications
+
+Bulla can send email notifications for new comments and replies. Notification emails include direct links to moderate (approve, delete, mark as spam) comments without logging into the admin panel. For guests, unsubscribe links are provided.
+
+![](./docs/assets/email.png)
 
 ### Telegram bot
 
