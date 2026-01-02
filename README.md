@@ -18,12 +18,13 @@ A self-hosted comment system for static sites and blogs.
 - **Appearance**
   - Dark mode (light, dark, or auto)
   - Customization with accent color, custom CSS, and branding options
-  - Avatars via Gravatar, GitHub, or imgproxy
+  - Avatars via Gravatar, GitHub, optionally proxied by imgproxy
 - **Authentication**
+  - Anonymous commenting with optional name/email/website
   - Optional GitHub login for commenters
   - Admin comments with badge, claim past comments by email/name
 - **Notifications**
-  - Email notifications for replies with unsubscribe support
+  - Email notifications for moderation and for replies with unsubscribe support
   - Telegram bot for notifications, replies, and moderation
 - **Moderation**
   - Approve, spam, delete from admin panel, email, or Telegram
