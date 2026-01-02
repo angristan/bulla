@@ -25,8 +25,11 @@ class NewCommentNotificationMail extends Mailable
     {
         $siteName = Setting::getValue('site_name', 'Comments');
         $status = $this->comment->isPending() ? ' (pending)' : '';
+        $fromAddress = Setting::getValue('smtp_from_address', config('mail.from.address'));
+        $fromName = Setting::getValue('smtp_from_name') ?: $siteName;
 
         return new Envelope(
+            from: new \Illuminate\Mail\Mailables\Address($fromAddress, $fromName),
             subject: "New comment{$status} - {$siteName}",
         );
     }

@@ -25,8 +25,11 @@ class ReplyNotificationMail extends Mailable
     public function envelope(): Envelope
     {
         $siteName = \App\Models\Setting::getValue('site_name', 'Comments');
+        $fromAddress = \App\Models\Setting::getValue('smtp_from_address', config('mail.from.address'));
+        $fromName = \App\Models\Setting::getValue('smtp_from_name') ?: $siteName;
 
         return new Envelope(
+            from: new \Illuminate\Mail\Mailables\Address($fromAddress, $fromName),
             subject: "New reply to your comment - {$siteName}",
         );
     }
