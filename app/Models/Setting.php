@@ -14,6 +14,13 @@ use Illuminate\Support\Facades\Crypt;
  */
 class Setting extends Model
 {
+    /**
+     * Request-scoped cache for settings values.
+     *
+     * @var array<string, string|null>
+     */
+    protected static array $cache = [];
+
     public $incrementing = false;
 
     public $timestamps = false;
@@ -61,17 +68,25 @@ class Setting extends Model
     }
 
     /**
-     * Get a setting value by key.
+     * Get a setting value by key (cached per request).
      */
     public static function getValue(string $key, ?string $default = null): ?string
     {
+        if (array_key_exists($key, static::$cache)) {
+            return static::$cache[$key] ?? $default;
+        }
+
         $setting = static::find($key);
 
         if ($setting === null) {
+            static::$cache[$key] = null;
+
             return $default;
         }
 
-        return $setting->getDecryptedValue() ?? $default;
+        static::$cache[$key] = $setting->getDecryptedValue();
+
+        return static::$cache[$key] ?? $default;
     }
 
     /**
@@ -83,11 +98,22 @@ class Setting extends Model
 
         if ($value === null) {
             $setting->delete();
+            unset(static::$cache[$key]);
 
             return;
         }
 
         $setting->setEncryptedValue($value, $encrypted);
         $setting->save();
+
+        static::$cache[$key] = $value;
+    }
+
+    /**
+     * Flush the settings cache (useful for testing and Octane).
+     */
+    public static function flushCache(): void
+    {
+        static::$cache = [];
     }
 }

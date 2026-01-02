@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Listeners\FlushSettingsCache;
 use Laravel\Octane\Contracts\OperationTerminated;
 use Laravel\Octane\Events\RequestHandled;
 use Laravel\Octane\Events\RequestReceived;
@@ -75,7 +76,7 @@ return [
         RequestReceived::class => [
             ...Octane::prepareApplicationForNextOperation(),
             ...Octane::prepareApplicationForNextRequest(),
-            //
+            FlushSettingsCache::class,
         ],
 
         RequestHandled::class => [
