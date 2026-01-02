@@ -1,8 +1,8 @@
-# Bulla
-
 <p align="center">
-  <img src="public/bulla.png" alt="Bulla" width="128" height="128">
+  <img src="public/bulla.png" alt="Bulla" width="120" height="120">
 </p>
+
+# Bulla
 
 A self-hosted comment system for static sites and blogs.
 
