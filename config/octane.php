@@ -137,7 +137,7 @@ return [
     ],
 
     'flush' => [
-        //
+        'mail.manager',
     ],
 
     /*
