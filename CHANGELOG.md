@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/angristan/bulla/compare/v1.0.0...v1.1.0) (2026-01-02)
+
+
+### Features
+
+* add two-factor authentication for admin login ([8bbb411](https://github.com/angristan/bulla/commit/8bbb411a64a403339c558e6982437b2e3da1c20d))
+
 # 1.0.0 (2026-01-02)
 
 
