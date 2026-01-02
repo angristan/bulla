@@ -4,13 +4,16 @@
 A new comment was posted on {{ $siteName }}.
 
 **Author:** {{ $comment->author ?? 'Anonymous' }}
+
 @if($comment->email)
 **Email:** {{ $comment->email }}
+
 @endif
 **Thread:** {{ $comment->thread->uri }}
 
-**Comment:**
-> {{ Str::limit(strip_tags($comment->body_html), 500) }}
+<x-mail::panel>
+{{ Str::limit(strip_tags($comment->body_html), 500) }}
+</x-mail::panel>
 
 @if($isPending)
 <x-mail::button :url="$approveUrl" color="success">
@@ -22,7 +25,7 @@ Approve
 Delete
 </x-mail::button>
 
-[View in admin panel]({{ $adminUrl }}) | [View on site]({{ $threadUrl }})
+[View in admin]({{ $adminUrl }}) | [View on site]({{ $threadUrl }})
 
 Thanks,<br>
 {{ $siteName }}
