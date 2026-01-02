@@ -199,13 +199,15 @@ class SendTelegramNotification
         }
 
         $authorLine = $email ? "{$author} ({$email})" : $author;
+        $adminUrl = url("/admin/comments/{$comment->id}");
 
         return "<b>New Comment{$statusBadge}</b>\n\n"
             ."<b>From:</b> {$authorLine}\n"
             ."<b>Thread:</b> {$threadTitle}\n\n"
             ."<blockquote>{$body}</blockquote>"
             .$parentQuote
-            ."\n\n<a href=\"{$threadUrl}\">View</a> • {$reactions}\n"
+            ."\n\n<a href=\"{$threadUrl}\">View on site</a> • <a href=\"{$adminUrl}\">View in admin</a>\n"
+            ."{$reactions}\n"
             .'<i>Reply to this message to post a reply comment as admin</i>';
     }
 
@@ -221,11 +223,12 @@ class SendTelegramNotification
             ?? rtrim(Setting::getValue('site_url', ''), '/').$comment->thread->uri;
         $threadUrl = "{$baseUrl}#comment-{$comment->id}";
         $threadTitle = htmlspecialchars($comment->thread->title ?? $comment->thread->uri, ENT_QUOTES, 'UTF-8');
+        $adminUrl = url("/admin/comments/{$comment->id}");
 
         return "👍 <b>Upvote Received</b>\n\n"
             ."Comment by {$author} now has <b>{$count}</b> upvote(s)\n"
             ."<b>Thread:</b> {$threadTitle}\n\n"
             ."<i>{$body}</i>\n\n"
-            ."<a href=\"{$threadUrl}\">View Comment</a>";
+            ."<a href=\"{$threadUrl}\">View on site</a> • <a href=\"{$adminUrl}\">View in admin</a>";
     }
 }
