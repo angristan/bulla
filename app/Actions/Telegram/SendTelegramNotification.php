@@ -8,7 +8,6 @@ use App\Models\Comment;
 use App\Models\Setting;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Str;
 use Lorisleiva\Actions\Concerns\AsAction;
 
 class SendTelegramNotification
@@ -172,7 +171,7 @@ class SendTelegramNotification
         $statusBadge = $comment->isPending() ? ' [PENDING]' : '';
         $author = htmlspecialchars($comment->author ?? 'Anonymous', ENT_QUOTES, 'UTF-8');
         $email = $comment->email ? htmlspecialchars($comment->email, ENT_QUOTES, 'UTF-8') : null;
-        $body = Str::limit(strip_tags($comment->body_html), 200);
+        $body = strip_tags($comment->body_html);
         $body = htmlspecialchars($body, ENT_QUOTES, 'UTF-8');
 
         $baseUrl = $comment->thread->url
@@ -185,7 +184,7 @@ class SendTelegramNotification
         if ($comment->parent) {
             $parentAuthor = htmlspecialchars($comment->parent->author ?? 'Anonymous', ENT_QUOTES, 'UTF-8');
             $parentDate = $comment->parent->created_at->format('M j, Y H:i');
-            $parentBody = Str::limit(strip_tags($comment->parent->body_html), 100);
+            $parentBody = strip_tags($comment->parent->body_html);
             $parentBody = htmlspecialchars($parentBody, ENT_QUOTES, 'UTF-8');
             $parentQuote = "\n\n<b>↩️ In reply to {$parentAuthor}</b> ({$parentDate}):\n<blockquote>{$parentBody}</blockquote>";
         }
@@ -216,7 +215,7 @@ class SendTelegramNotification
         $comment->loadMissing('thread');
 
         $author = htmlspecialchars($comment->author ?? 'Anonymous', ENT_QUOTES, 'UTF-8');
-        $body = Str::limit(strip_tags($comment->body_html), 100);
+        $body = strip_tags($comment->body_html);
         $body = htmlspecialchars($body, ENT_QUOTES, 'UTF-8');
 
         $baseUrl = $comment->thread->url
