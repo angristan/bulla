@@ -8,3 +8,8 @@ parameters:
 
     # Level 10 is the highest level
     level: 5
+
+    # Ignore WebAuthn library named parameter issues (PHPStan stubs don't include them)
+    ignoreErrors:
+        - '#Unknown parameter .+ in call to method Webauthn\\CeremonyStep\\CeremonyStepManagerFactory::#'
+        - '#Unknown parameter .+ in call to method Webauthn\\AuthenticatorAssertionResponseValidator::check#'

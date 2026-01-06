@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Admin;
 
-use App\Actions\Admin\AuthenticateAdmin;
+use App\Actions\Admin\Passkey\GenerateAuthenticationOptions;
+use App\Actions\Admin\Passkey\VerifyAuthentication;
 use App\Actions\Admin\TwoFactor\VerifyTwoFactorCode;
 use App\Http\Controllers\Controller;
+use App\Models\Passkey;
 use App\Models\Setting;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -18,40 +21,73 @@ class AuthController extends Controller
     /**
      * Show login form.
      */
-    public function showLogin(): Response
+    public function showLogin(Request $request): Response
     {
-        return Inertia::render('Auth/Login');
+        return Inertia::render('Auth/Login', [
+            'hasPasskeys' => Passkey::exists(),
+        ]);
     }
 
     /**
-     * Handle login request.
+     * Generate passkey authentication options.
      */
-    public function login(Request $request): RedirectResponse
+    public function passkeyOptions(Request $request): JsonResponse
     {
-        $validated = $request->validate([
-            'username' => ['required', 'string'],
-            'password' => ['required', 'string'],
-        ]);
+        $result = GenerateAuthenticationOptions::run();
 
-        if (AuthenticateAdmin::run($validated['username'], $validated['password'])) {
-            $request->session()->regenerate();
-
-            // Check if 2FA is enabled
-            if (Setting::getValue('totp_enabled', 'false') === 'true') {
-                $request->session()->put('admin_password_verified', true);
-                $request->session()->put('admin_password_verified_at', now()->timestamp);
-
-                return redirect()->route('admin.login.2fa');
-            }
-
-            $request->session()->put('admin_authenticated', true);
-
-            return redirect()->intended(route('admin.dashboard'));
+        if ($result === null) {
+            return response()->json(['error' => 'No passkeys registered'], 400);
         }
 
-        return back()->withErrors([
-            'username' => 'Invalid credentials.',
-        ])->onlyInput('username');
+        // Store challenge in session
+        $request->session()->put('passkey_challenge', $result['challenge']);
+        $request->session()->put('passkey_challenge_at', now()->timestamp);
+
+        return response()->json($result['options']);
+    }
+
+    /**
+     * Verify passkey authentication.
+     */
+    public function passkeyVerify(Request $request): JsonResponse
+    {
+        $challenge = $request->session()->get('passkey_challenge');
+        $challengeAt = $request->session()->get('passkey_challenge_at', 0);
+
+        // Expire after 2 minutes
+        if (! $challenge || now()->timestamp - $challengeAt > 120) {
+            $request->session()->forget(['passkey_challenge', 'passkey_challenge_at']);
+
+            return response()->json(['error' => 'Challenge expired'], 400);
+        }
+
+        $validated = $request->validate([
+            'credential' => ['required', 'array'],
+        ]);
+
+        $result = VerifyAuthentication::run($validated['credential'], $challenge);
+
+        if (! $result['success']) {
+            return response()->json(['error' => $result['message'] ?? 'Verification failed'], 400);
+        }
+
+        // Clear challenge
+        $request->session()->forget(['passkey_challenge', 'passkey_challenge_at']);
+
+        // Check if 2FA is enabled
+        if (Setting::getValue('totp_enabled', 'false') === 'true') {
+            $request->session()->regenerate();
+            $request->session()->put('admin_passkey_verified', true);
+            $request->session()->put('admin_passkey_verified_at', now()->timestamp);
+
+            return response()->json(['redirect' => route('admin.login.2fa')]);
+        }
+
+        // Fully authenticate
+        $request->session()->regenerate();
+        $request->session()->put('admin_authenticated', true);
+
+        return response()->json(['redirect' => route('admin.dashboard')]);
     }
 
     /**
@@ -59,18 +95,18 @@ class AuthController extends Controller
      */
     public function showTwoFactorChallenge(Request $request): Response|RedirectResponse
     {
-        // Must have verified password first
-        if (! $request->session()->get('admin_password_verified')) {
+        // Must have verified passkey first
+        if (! $request->session()->get('admin_passkey_verified')) {
             return redirect()->route('admin.login');
         }
 
         // Expire after 5 minutes
-        $verifiedAt = $request->session()->get('admin_password_verified_at', 0);
+        $verifiedAt = $request->session()->get('admin_passkey_verified_at', 0);
         if (now()->timestamp - $verifiedAt > 300) {
-            $request->session()->forget(['admin_password_verified', 'admin_password_verified_at']);
+            $request->session()->forget(['admin_passkey_verified', 'admin_passkey_verified_at']);
 
             return redirect()->route('admin.login')->withErrors([
-                'username' => 'Session expired. Please login again.',
+                'passkey' => 'Session expired. Please login again.',
             ]);
         }
 
@@ -82,18 +118,18 @@ class AuthController extends Controller
      */
     public function verifyTwoFactor(Request $request): RedirectResponse
     {
-        // Must have verified password first
-        if (! $request->session()->get('admin_password_verified')) {
+        // Must have verified passkey first
+        if (! $request->session()->get('admin_passkey_verified')) {
             return redirect()->route('admin.login');
         }
 
         // Expire after 5 minutes
-        $verifiedAt = $request->session()->get('admin_password_verified_at', 0);
+        $verifiedAt = $request->session()->get('admin_passkey_verified_at', 0);
         if (now()->timestamp - $verifiedAt > 300) {
-            $request->session()->forget(['admin_password_verified', 'admin_password_verified_at']);
+            $request->session()->forget(['admin_passkey_verified', 'admin_passkey_verified_at']);
 
             return redirect()->route('admin.login')->withErrors([
-                'username' => 'Session expired. Please login again.',
+                'passkey' => 'Session expired. Please login again.',
             ]);
         }
 
@@ -106,7 +142,7 @@ class AuthController extends Controller
         }
 
         // Clear intermediate state and fully authenticate
-        $request->session()->forget(['admin_password_verified', 'admin_password_verified_at']);
+        $request->session()->forget(['admin_passkey_verified', 'admin_passkey_verified_at']);
         $request->session()->put('admin_authenticated', true);
 
         return redirect()->intended(route('admin.dashboard'));
@@ -119,8 +155,10 @@ class AuthController extends Controller
     {
         $request->session()->forget([
             'admin_authenticated',
-            'admin_password_verified',
-            'admin_password_verified_at',
+            'admin_passkey_verified',
+            'admin_passkey_verified_at',
+            'passkey_challenge',
+            'passkey_challenge_at',
         ]);
         $request->session()->invalidate();
         $request->session()->regenerateToken();
