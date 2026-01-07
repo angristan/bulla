@@ -25,9 +25,11 @@ import {
     IconBrandTelegram,
     IconCheck,
     IconCopy,
+    IconFingerprint,
     IconKey,
     IconMail,
     IconPalette,
+    IconPlus,
     IconRefresh,
     IconSettings,
     IconShield,
@@ -44,8 +46,20 @@ interface TwoFactorStatus {
     recovery_codes_remaining: number;
 }
 
+interface PasskeyInfo {
+    id: string;
+    name: string;
+    created_at: string;
+}
+
+interface PasskeyStatus {
+    enabled: boolean;
+    passkeys: PasskeyInfo[];
+}
+
 interface SettingsIndexProps {
     twoFactor: TwoFactorStatus;
+    passkeys: PasskeyStatus;
     settings: {
         site_name: string;
         site_url: string | null;
@@ -99,9 +113,30 @@ type SettingsTab =
     | 'security'
     | 'danger';
 
+// Helper to convert base64 to ArrayBuffer
+function base64ToArrayBuffer(base64: string): ArrayBuffer {
+    const binaryString = atob(base64);
+    const bytes = new Uint8Array(binaryString.length);
+    for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+    }
+    return bytes.buffer;
+}
+
+// Helper to convert ArrayBuffer to base64
+function arrayBufferToBase64(buffer: ArrayBuffer): string {
+    const bytes = new Uint8Array(buffer);
+    let binary = '';
+    for (let i = 0; i < bytes.byteLength; i++) {
+        binary += String.fromCharCode(bytes[i]);
+    }
+    return btoa(binary);
+}
+
 export default function SettingsIndex({
     settings,
     twoFactor,
+    passkeys,
 }: SettingsIndexProps) {
     const [activeTab, setActiveTab] = useUrlState<SettingsTab>(
         'tab',
@@ -125,6 +160,11 @@ export default function SettingsIndex({
     const [recoveryCodes, setRecoveryCodes] = useState<string[] | null>(null);
     const [is2faAction, setIs2faAction] = useState(false);
     const [twoFactorError, setTwoFactorError] = useState<string | null>(null);
+
+    // Passkey state
+    const [isPasskeyAction, setIsPasskeyAction] = useState(false);
+    const [passkeyError, setPasskeyError] = useState<string | null>(null);
+    const [newPasskeyName, setNewPasskeyName] = useState('');
 
     const { data, setData, post, processing } = useForm({
         site_name: settings.site_name,
@@ -451,6 +491,176 @@ export default function SettingsIndex({
                 color: 'green',
                 icon: <IconCopy size={16} />,
             });
+        }
+    };
+
+    // Passkey handlers
+    const handleRegisterPasskey = async () => {
+        setIsPasskeyAction(true);
+        setPasskeyError(null);
+
+        try {
+            // Get registration options
+            const optionsResponse = await fetch(
+                '/admin/settings/passkeys/options',
+                {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Accept: 'application/json',
+                        'X-XSRF-TOKEN': getCsrfToken(),
+                    },
+                },
+            );
+
+            if (!optionsResponse.ok) {
+                const result = await optionsResponse.json();
+                throw new Error(
+                    result.error || 'Failed to get registration options',
+                );
+            }
+
+            const options = await optionsResponse.json();
+
+            // Convert base64 values to ArrayBuffer
+            const publicKeyOptions: PublicKeyCredentialCreationOptions = {
+                challenge: base64ToArrayBuffer(options.challenge),
+                rp: {
+                    name: options.rp.name,
+                    id: options.rp.id,
+                },
+                user: {
+                    id: base64ToArrayBuffer(options.user.id),
+                    name: options.user.name,
+                    displayName: options.user.displayName,
+                },
+                pubKeyCredParams: options.pubKeyCredParams,
+                timeout: options.timeout,
+                excludeCredentials: options.excludeCredentials?.map(
+                    (cred: {
+                        type: string;
+                        id: string;
+                        transports?: string[];
+                    }) => ({
+                        type: cred.type,
+                        id: base64ToArrayBuffer(cred.id),
+                        transports: cred.transports,
+                    }),
+                ),
+                authenticatorSelection: options.authenticatorSelection,
+                attestation: options.attestation,
+            };
+
+            // Create credential
+            const credential = (await navigator.credentials.create({
+                publicKey: publicKeyOptions,
+            })) as PublicKeyCredential;
+
+            if (!credential) {
+                throw new Error('No credential returned');
+            }
+
+            const response =
+                credential.response as AuthenticatorAttestationResponse;
+
+            // Prepare credential for server
+            const credentialData = {
+                id: credential.id,
+                rawId: arrayBufferToBase64(credential.rawId),
+                type: credential.type,
+                response: {
+                    clientDataJSON: arrayBufferToBase64(
+                        response.clientDataJSON,
+                    ),
+                    attestationObject: arrayBufferToBase64(
+                        response.attestationObject,
+                    ),
+                },
+            };
+
+            // Register passkey
+            const registerResponse = await fetch('/admin/settings/passkeys', {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Accept: 'application/json',
+                    'X-XSRF-TOKEN': getCsrfToken(),
+                },
+                body: JSON.stringify({
+                    credential: credentialData,
+                    name: newPasskeyName || 'New Passkey',
+                }),
+            });
+
+            const registerResult = await registerResponse.json();
+
+            if (!registerResponse.ok) {
+                throw new Error(registerResult.error || 'Registration failed');
+            }
+
+            setNewPasskeyName('');
+            router.reload({ only: ['passkeys'] });
+            notifications.show({
+                title: 'Passkey Added',
+                message: 'Your new passkey has been registered.',
+                color: 'green',
+                icon: <IconCheck size={16} />,
+            });
+        } catch (err) {
+            if (err instanceof Error) {
+                if (err.name === 'NotAllowedError') {
+                    setPasskeyError(
+                        'Passkey registration was cancelled or timed out.',
+                    );
+                } else {
+                    setPasskeyError(err.message);
+                }
+            } else {
+                setPasskeyError('An unexpected error occurred');
+            }
+        } finally {
+            setIsPasskeyAction(false);
+        }
+    };
+
+    const handleDeletePasskey = async (id: string) => {
+        setIsPasskeyAction(true);
+        setPasskeyError(null);
+
+        try {
+            const response = await fetch(`/admin/settings/passkeys/${id}`, {
+                method: 'DELETE',
+                credentials: 'same-origin',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Accept: 'application/json',
+                    'X-XSRF-TOKEN': getCsrfToken(),
+                },
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.error || 'Failed to delete passkey');
+            }
+
+            router.reload({ only: ['passkeys'] });
+            notifications.show({
+                title: 'Passkey Deleted',
+                message: 'The passkey has been removed.',
+                color: 'green',
+                icon: <IconCheck size={16} />,
+            });
+        } catch (err) {
+            if (err instanceof Error) {
+                setPasskeyError(err.message);
+            } else {
+                setPasskeyError('An unexpected error occurred');
+            }
+        } finally {
+            setIsPasskeyAction(false);
         }
     };
 
@@ -1126,280 +1336,451 @@ export default function SettingsIndex({
                     </Tabs.Panel>
 
                     <Tabs.Panel value="security">
-                        <Paper withBorder p="md" radius="md">
-                            <Stack>
-                                <Text size="sm" c="dimmed">
-                                    Protect your admin account with two-factor
-                                    authentication using an authenticator app
-                                    like Google Authenticator or Authy.
-                                </Text>
-
-                                {twoFactorError && (
-                                    <Alert color="red">{twoFactorError}</Alert>
-                                )}
-
-                                {/* Recovery codes display */}
-                                {recoveryCodes && (
-                                    <Alert
-                                        color="blue"
-                                        icon={<IconKey size={16} />}
-                                        title="Save your recovery codes"
+                        <Stack gap="lg">
+                            {/* Passkeys Section */}
+                            <Paper withBorder p="md" radius="md">
+                                <Stack>
+                                    <Group
+                                        justify="space-between"
+                                        align="center"
                                     >
-                                        <Text size="sm" mb="sm">
-                                            Store these codes in a safe place.
-                                            Each code can only be used once.
-                                        </Text>
-                                        <Paper withBorder p="sm" radius="sm">
-                                            <Group gap="md">
-                                                {recoveryCodes.map((code) => (
-                                                    <Text
-                                                        key={code}
-                                                        ff="monospace"
-                                                        size="sm"
-                                                        fw={500}
-                                                    >
-                                                        {code}
-                                                    </Text>
-                                                ))}
-                                            </Group>
-                                        </Paper>
-                                        <Group mt="sm">
-                                            <Button
-                                                size="xs"
-                                                variant="light"
-                                                leftSection={
-                                                    <IconCopy size={14} />
-                                                }
-                                                onClick={copyRecoveryCodes}
-                                            >
-                                                Copy codes
-                                            </Button>
-                                            <Button
-                                                size="xs"
-                                                variant="subtle"
-                                                onClick={() =>
-                                                    setRecoveryCodes(null)
-                                                }
-                                            >
-                                                I&apos;ve saved them
-                                            </Button>
-                                        </Group>
-                                    </Alert>
-                                )}
+                                        <div>
+                                            <Text fw={500} size="lg">
+                                                <IconFingerprint
+                                                    size={20}
+                                                    style={{
+                                                        verticalAlign: 'middle',
+                                                        marginRight: 8,
+                                                    }}
+                                                />
+                                                Passkeys
+                                            </Text>
+                                            <Text size="sm" c="dimmed">
+                                                Passkeys use your device&apos;s
+                                                biometrics or security key to
+                                                securely sign you in.
+                                            </Text>
+                                        </div>
+                                    </Group>
 
-                                {!twoFactor.enabled ? (
-                                    /* Setup 2FA */
-                                    !twoFactorSetup ? (
+                                    {passkeyError && (
+                                        <Alert color="red">
+                                            {passkeyError}
+                                        </Alert>
+                                    )}
+
+                                    {/* List of passkeys */}
+                                    {passkeys.passkeys.length > 0 && (
+                                        <Stack gap="xs">
+                                            {passkeys.passkeys.map(
+                                                (passkey) => (
+                                                    <Paper
+                                                        key={passkey.id}
+                                                        withBorder
+                                                        p="sm"
+                                                        radius="sm"
+                                                    >
+                                                        <Group
+                                                            justify="space-between"
+                                                            align="center"
+                                                        >
+                                                            <div>
+                                                                <Text fw={500}>
+                                                                    {
+                                                                        passkey.name
+                                                                    }
+                                                                </Text>
+                                                                <Text
+                                                                    size="xs"
+                                                                    c="dimmed"
+                                                                >
+                                                                    Added{' '}
+                                                                    {
+                                                                        passkey.created_at
+                                                                    }
+                                                                </Text>
+                                                            </div>
+                                                            <Button
+                                                                variant="subtle"
+                                                                color="red"
+                                                                size="xs"
+                                                                leftSection={
+                                                                    <IconTrash
+                                                                        size={
+                                                                            14
+                                                                        }
+                                                                    />
+                                                                }
+                                                                onClick={() =>
+                                                                    handleDeletePasskey(
+                                                                        passkey.id,
+                                                                    )
+                                                                }
+                                                                loading={
+                                                                    isPasskeyAction
+                                                                }
+                                                                disabled={
+                                                                    passkeys
+                                                                        .passkeys
+                                                                        .length <=
+                                                                    1
+                                                                }
+                                                            >
+                                                                Delete
+                                                            </Button>
+                                                        </Group>
+                                                    </Paper>
+                                                ),
+                                            )}
+                                        </Stack>
+                                    )}
+
+                                    {/* Add new passkey */}
+                                    <Group align="flex-end">
+                                        <TextInput
+                                            label="Add a new passkey"
+                                            placeholder="Passkey name (e.g., MacBook, iPhone)"
+                                            value={newPasskeyName}
+                                            onChange={(e) =>
+                                                setNewPasskeyName(
+                                                    e.target.value,
+                                                )
+                                            }
+                                            style={{ flex: 1 }}
+                                        />
+                                        <Button
+                                            leftSection={<IconPlus size={16} />}
+                                            onClick={handleRegisterPasskey}
+                                            loading={isPasskeyAction}
+                                        >
+                                            Add Passkey
+                                        </Button>
+                                    </Group>
+                                </Stack>
+                            </Paper>
+
+                            {/* 2FA Section */}
+                            <Paper withBorder p="md" radius="md">
+                                <Stack>
+                                    <Text fw={500} size="lg">
+                                        <IconShieldLock
+                                            size={20}
+                                            style={{
+                                                verticalAlign: 'middle',
+                                                marginRight: 8,
+                                            }}
+                                        />
+                                        Two-Factor Authentication
+                                    </Text>
+                                    <Text size="sm" c="dimmed">
+                                        Add an extra layer of security using an
+                                        authenticator app like Google
+                                        Authenticator or Authy.
+                                    </Text>
+
+                                    {twoFactorError && (
+                                        <Alert color="red">
+                                            {twoFactorError}
+                                        </Alert>
+                                    )}
+
+                                    {/* Recovery codes display */}
+                                    {recoveryCodes && (
+                                        <Alert
+                                            color="blue"
+                                            icon={<IconKey size={16} />}
+                                            title="Save your recovery codes"
+                                        >
+                                            <Text size="sm" mb="sm">
+                                                Store these codes in a safe
+                                                place. Each code can only be
+                                                used once.
+                                            </Text>
+                                            <Paper
+                                                withBorder
+                                                p="sm"
+                                                radius="sm"
+                                            >
+                                                <Group gap="md">
+                                                    {recoveryCodes.map(
+                                                        (code) => (
+                                                            <Text
+                                                                key={code}
+                                                                ff="monospace"
+                                                                size="sm"
+                                                                fw={500}
+                                                            >
+                                                                {code}
+                                                            </Text>
+                                                        ),
+                                                    )}
+                                                </Group>
+                                            </Paper>
+                                            <Group mt="sm">
+                                                <Button
+                                                    size="xs"
+                                                    variant="light"
+                                                    leftSection={
+                                                        <IconCopy size={14} />
+                                                    }
+                                                    onClick={copyRecoveryCodes}
+                                                >
+                                                    Copy codes
+                                                </Button>
+                                                <Button
+                                                    size="xs"
+                                                    variant="subtle"
+                                                    onClick={() =>
+                                                        setRecoveryCodes(null)
+                                                    }
+                                                >
+                                                    I&apos;ve saved them
+                                                </Button>
+                                            </Group>
+                                        </Alert>
+                                    )}
+
+                                    {!twoFactor.enabled ? (
+                                        /* Setup 2FA */
+                                        !twoFactorSetup ? (
+                                            <>
+                                                <Alert
+                                                    color="gray"
+                                                    icon={
+                                                        <IconShieldLock
+                                                            size={16}
+                                                        />
+                                                    }
+                                                >
+                                                    Two-factor authentication is
+                                                    not enabled. Add an extra
+                                                    layer of security to your
+                                                    account.
+                                                </Alert>
+                                                <Button
+                                                    leftSection={
+                                                        <IconShieldLock
+                                                            size={16}
+                                                        />
+                                                    }
+                                                    onClick={handleSetup2FA}
+                                                    loading={is2faAction}
+                                                    style={{
+                                                        alignSelf: 'flex-start',
+                                                    }}
+                                                >
+                                                    Enable Two-Factor
+                                                    Authentication
+                                                </Button>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Text fw={500}>
+                                                    Scan this QR code with your
+                                                    authenticator app
+                                                </Text>
+                                                <Group
+                                                    align="flex-start"
+                                                    gap="xl"
+                                                >
+                                                    <div
+                                                        style={{
+                                                            background: 'white',
+                                                            padding: '16px',
+                                                            borderRadius: '8px',
+                                                            border: '1px solid var(--mantine-color-gray-3)',
+                                                        }}
+                                                        dangerouslySetInnerHTML={{
+                                                            __html: twoFactorSetup.qrCodeSvg,
+                                                        }}
+                                                    />
+                                                    <Stack
+                                                        gap="md"
+                                                        style={{ flex: 1 }}
+                                                    >
+                                                        <Text
+                                                            size="sm"
+                                                            c="dimmed"
+                                                        >
+                                                            Or enter this code
+                                                            manually:
+                                                        </Text>
+                                                        <Text
+                                                            ff="monospace"
+                                                            fw={500}
+                                                            size="lg"
+                                                            style={{
+                                                                background:
+                                                                    'var(--mantine-color-gray-1)',
+                                                                padding:
+                                                                    '8px 12px',
+                                                                borderRadius:
+                                                                    '4px',
+                                                                width: 'fit-content',
+                                                            }}
+                                                        >
+                                                            {
+                                                                twoFactorSetup.secret
+                                                            }
+                                                        </Text>
+                                                        <TextInput
+                                                            label="Verification code"
+                                                            description="Enter the 6-digit code from your authenticator app"
+                                                            placeholder="000000"
+                                                            value={
+                                                                twoFactorCode
+                                                            }
+                                                            onChange={(e) =>
+                                                                setTwoFactorCode(
+                                                                    e.target.value.replace(
+                                                                        /\D/g,
+                                                                        '',
+                                                                    ),
+                                                                )
+                                                            }
+                                                            maxLength={6}
+                                                            styles={{
+                                                                input: {
+                                                                    fontFamily:
+                                                                        'monospace',
+                                                                    letterSpacing:
+                                                                        '0.2em',
+                                                                },
+                                                            }}
+                                                        />
+                                                        <Group>
+                                                            <Button
+                                                                onClick={
+                                                                    handleEnable2FA
+                                                                }
+                                                                loading={
+                                                                    is2faAction
+                                                                }
+                                                                disabled={
+                                                                    twoFactorCode.length !==
+                                                                    6
+                                                                }
+                                                            >
+                                                                Verify &amp;
+                                                                Enable
+                                                            </Button>
+                                                            <Button
+                                                                variant="subtle"
+                                                                onClick={() => {
+                                                                    setTwoFactorSetup(
+                                                                        null,
+                                                                    );
+                                                                    setTwoFactorCode(
+                                                                        '',
+                                                                    );
+                                                                }}
+                                                            >
+                                                                Cancel
+                                                            </Button>
+                                                        </Group>
+                                                    </Stack>
+                                                </Group>
+                                            </>
+                                        )
+                                    ) : (
+                                        /* 2FA Enabled */
                                         <>
                                             <Alert
-                                                color="gray"
+                                                color="green"
                                                 icon={
                                                     <IconShieldLock size={16} />
                                                 }
                                             >
-                                                Two-factor authentication is not
-                                                enabled. Add an extra layer of
-                                                security to your account.
+                                                Two-factor authentication is
+                                                enabled.
+                                                {twoFactor.recovery_codes_remaining <
+                                                    3 && (
+                                                    <Text size="sm" mt="xs">
+                                                        Warning: Only{' '}
+                                                        {
+                                                            twoFactor.recovery_codes_remaining
+                                                        }{' '}
+                                                        recovery codes
+                                                        remaining.
+                                                    </Text>
+                                                )}
                                             </Alert>
-                                            <Button
-                                                leftSection={
-                                                    <IconShieldLock size={16} />
+
+                                            <TextInput
+                                                label="Regenerate recovery codes"
+                                                description={`You have ${twoFactor.recovery_codes_remaining} recovery codes remaining. Enter your 2FA code to generate new ones.`}
+                                                placeholder="000000"
+                                                value={regenerateCode}
+                                                onChange={(e) =>
+                                                    setRegenerateCode(
+                                                        e.target.value.replace(
+                                                            /\D/g,
+                                                            '',
+                                                        ),
+                                                    )
                                                 }
-                                                onClick={handleSetup2FA}
-                                                loading={is2faAction}
-                                                style={{
-                                                    alignSelf: 'flex-start',
+                                                maxLength={6}
+                                                styles={{
+                                                    input: {
+                                                        fontFamily: 'monospace',
+                                                    },
                                                 }}
-                                            >
-                                                Enable Two-Factor Authentication
-                                            </Button>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Text fw={500}>
-                                                Scan this QR code with your
-                                                authenticator app
-                                            </Text>
-                                            <Group align="flex-start" gap="xl">
-                                                <div
-                                                    style={{
-                                                        background: 'white',
-                                                        padding: '16px',
-                                                        borderRadius: '8px',
-                                                        border: '1px solid var(--mantine-color-gray-3)',
-                                                    }}
-                                                    dangerouslySetInnerHTML={{
-                                                        __html: twoFactorSetup.qrCodeSvg,
-                                                    }}
-                                                />
-                                                <Stack
-                                                    gap="md"
-                                                    style={{ flex: 1 }}
+                                            />
+                                            <Group>
+                                                <Button
+                                                    variant="light"
+                                                    leftSection={
+                                                        <IconRefresh
+                                                            size={16}
+                                                        />
+                                                    }
+                                                    onClick={
+                                                        handleRegenerateRecoveryCodes
+                                                    }
+                                                    loading={is2faAction}
+                                                    disabled={
+                                                        regenerateCode.length !==
+                                                        6
+                                                    }
                                                 >
-                                                    <Text size="sm" c="dimmed">
-                                                        Or enter this code
-                                                        manually:
-                                                    </Text>
-                                                    <Text
-                                                        ff="monospace"
-                                                        fw={500}
-                                                        size="lg"
-                                                        style={{
-                                                            background:
-                                                                'var(--mantine-color-gray-1)',
-                                                            padding: '8px 12px',
-                                                            borderRadius: '4px',
-                                                            width: 'fit-content',
-                                                        }}
-                                                    >
-                                                        {twoFactorSetup.secret}
-                                                    </Text>
-                                                    <TextInput
-                                                        label="Verification code"
-                                                        description="Enter the 6-digit code from your authenticator app"
-                                                        placeholder="000000"
-                                                        value={twoFactorCode}
-                                                        onChange={(e) =>
-                                                            setTwoFactorCode(
-                                                                e.target.value.replace(
-                                                                    /\D/g,
-                                                                    '',
-                                                                ),
-                                                            )
-                                                        }
-                                                        maxLength={6}
-                                                        styles={{
-                                                            input: {
-                                                                fontFamily:
-                                                                    'monospace',
-                                                                letterSpacing:
-                                                                    '0.2em',
-                                                            },
-                                                        }}
-                                                    />
-                                                    <Group>
-                                                        <Button
-                                                            onClick={
-                                                                handleEnable2FA
-                                                            }
-                                                            loading={
-                                                                is2faAction
-                                                            }
-                                                            disabled={
-                                                                twoFactorCode.length !==
-                                                                6
-                                                            }
-                                                        >
-                                                            Verify &amp; Enable
-                                                        </Button>
-                                                        <Button
-                                                            variant="subtle"
-                                                            onClick={() => {
-                                                                setTwoFactorSetup(
-                                                                    null,
-                                                                );
-                                                                setTwoFactorCode(
-                                                                    '',
-                                                                );
-                                                            }}
-                                                        >
-                                                            Cancel
-                                                        </Button>
-                                                    </Group>
-                                                </Stack>
+                                                    Regenerate Recovery Codes
+                                                </Button>
+                                            </Group>
+
+                                            <TextInput
+                                                label="Disable two-factor authentication"
+                                                description="Enter your 2FA code or a recovery code to disable"
+                                                placeholder="000000 or XXXX-XXXX"
+                                                value={disableCode}
+                                                onChange={(e) =>
+                                                    setDisableCode(
+                                                        e.target.value,
+                                                    )
+                                                }
+                                                styles={{
+                                                    input: {
+                                                        fontFamily: 'monospace',
+                                                    },
+                                                }}
+                                            />
+                                            <Group>
+                                                <Button
+                                                    color="red"
+                                                    variant="light"
+                                                    onClick={handleDisable2FA}
+                                                    loading={is2faAction}
+                                                    disabled={
+                                                        disableCode.length < 6
+                                                    }
+                                                >
+                                                    Disable 2FA
+                                                </Button>
                                             </Group>
                                         </>
-                                    )
-                                ) : (
-                                    /* 2FA Enabled */
-                                    <>
-                                        <Alert
-                                            color="green"
-                                            icon={<IconShieldLock size={16} />}
-                                        >
-                                            Two-factor authentication is
-                                            enabled.
-                                            {twoFactor.recovery_codes_remaining <
-                                                3 && (
-                                                <Text size="sm" mt="xs">
-                                                    Warning: Only{' '}
-                                                    {
-                                                        twoFactor.recovery_codes_remaining
-                                                    }{' '}
-                                                    recovery codes remaining.
-                                                </Text>
-                                            )}
-                                        </Alert>
-
-                                        <TextInput
-                                            label="Regenerate recovery codes"
-                                            description={`You have ${twoFactor.recovery_codes_remaining} recovery codes remaining. Enter your 2FA code to generate new ones.`}
-                                            placeholder="000000"
-                                            value={regenerateCode}
-                                            onChange={(e) =>
-                                                setRegenerateCode(
-                                                    e.target.value.replace(
-                                                        /\D/g,
-                                                        '',
-                                                    ),
-                                                )
-                                            }
-                                            maxLength={6}
-                                            styles={{
-                                                input: {
-                                                    fontFamily: 'monospace',
-                                                },
-                                            }}
-                                        />
-                                        <Group>
-                                            <Button
-                                                variant="light"
-                                                leftSection={
-                                                    <IconRefresh size={16} />
-                                                }
-                                                onClick={
-                                                    handleRegenerateRecoveryCodes
-                                                }
-                                                loading={is2faAction}
-                                                disabled={
-                                                    regenerateCode.length !== 6
-                                                }
-                                            >
-                                                Regenerate Recovery Codes
-                                            </Button>
-                                        </Group>
-
-                                        <TextInput
-                                            label="Disable two-factor authentication"
-                                            description="Enter your 2FA code or a recovery code to disable"
-                                            placeholder="000000 or XXXX-XXXX"
-                                            value={disableCode}
-                                            onChange={(e) =>
-                                                setDisableCode(e.target.value)
-                                            }
-                                            styles={{
-                                                input: {
-                                                    fontFamily: 'monospace',
-                                                },
-                                            }}
-                                        />
-                                        <Group>
-                                            <Button
-                                                color="red"
-                                                variant="light"
-                                                onClick={handleDisable2FA}
-                                                loading={is2faAction}
-                                                disabled={
-                                                    disableCode.length < 6
-                                                }
-                                            >
-                                                Disable 2FA
-                                            </Button>
-                                        </Group>
-                                    </>
-                                )}
-                            </Stack>
-                        </Paper>
+                                    )}
+                                </Stack>
+                            </Paper>
+                        </Stack>
                     </Tabs.Panel>
 
                     <Tabs.Panel value="danger">

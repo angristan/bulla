@@ -20,7 +20,8 @@
         "league/commonmark": "^2.8",
         "lorisleiva/laravel-actions": "^2.9",
         "onliner/imgproxy-php": "^0.2.4",
-        "pragmarx/google2fa": "^9.0"
+        "pragmarx/google2fa": "^9.0",
+        "web-auth/webauthn-lib": "^5.0"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",

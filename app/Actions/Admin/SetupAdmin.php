@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Actions\Admin;
 
 use App\Models\Setting;
-use Illuminate\Support\Facades\Hash;
 use Lorisleiva\Actions\Concerns\AsAction;
 
 class SetupAdmin
@@ -13,18 +12,16 @@ class SetupAdmin
     use AsAction;
 
     /**
-     * Set up the admin account.
+     * Set up the admin account (passkey is registered separately).
      */
     public function handle(
         string $username,
         string $email,
-        string $password,
         string $siteName,
         string $siteUrl
     ): void {
         Setting::setValue('admin_username', $username);
         Setting::setValue('admin_email', $email);
-        Setting::setValue('admin_password', Hash::make($password));
         Setting::setValue('site_name', $siteName);
         Setting::setValue('site_url', $siteUrl);
 
