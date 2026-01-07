@@ -12,7 +12,7 @@
         "test:run": "vitest run"
     },
     "dependencies": {
-        "preact": "^10.25.0"
+        "preact": "^10.28.2"
     },
     "devDependencies": {
         "@biomejs/biome": "^2.3.10",
