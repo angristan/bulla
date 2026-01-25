@@ -13,7 +13,7 @@
     "dependencies": {
         "@inertiajs/react": "^2.3.6",
         "@mantine/charts": "^8.0.0",
-        "@mantine/core": "^8.0.0",
+        "@mantine/core": "^8.3.13",
         "@mantine/dropzone": "^8.0.0",
         "@mantine/hooks": "^8.0.0",
         "@mantine/modals": "^8.0.0",
