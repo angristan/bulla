@@ -15,7 +15,7 @@
         "preact": "^10.28.2"
     },
     "devDependencies": {
-        "@biomejs/biome": "^2.3.10",
+        "@biomejs/biome": "^2.3.13",
         "@preact/preset-vite": "^2.9.0",
         "@testing-library/jest-dom": "^6.6.3",
         "@testing-library/preact": "^3.2.4",
