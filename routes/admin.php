@@ -16,9 +16,12 @@ use Inertia\Inertia;
 // Setup (no auth required, but redirects if already setup)
 Route::middleware([RedirectIfSetupRequired::class])->group(function (): void {
     Route::get('/setup', [SetupController::class, 'show'])->name('admin.setup');
+    Route::post('/setup/info', [SetupController::class, 'storeInfo'])->name('admin.setup.info');
+    Route::post('/setup/passkey/options', [SetupController::class, 'passkeyOptions'])->name('admin.setup.passkey.options');
     Route::post('/setup', [SetupController::class, 'store'])->name('admin.setup.store');
     Route::get('/login', [AuthController::class, 'showLogin'])->name('admin.login');
-    Route::post('/login', [AuthController::class, 'login'])->name('admin.login.store');
+    Route::post('/login/passkey/options', [AuthController::class, 'passkeyOptions'])->name('admin.login.passkey.options');
+    Route::post('/login/passkey/verify', [AuthController::class, 'passkeyVerify'])->name('admin.login.passkey.verify');
     Route::get('/login/2fa', [AuthController::class, 'showTwoFactorChallenge'])->name('admin.login.2fa');
     Route::post('/login/2fa', [AuthController::class, 'verifyTwoFactor'])->name('admin.login.2fa.verify');
 });
@@ -56,6 +59,12 @@ Route::middleware([RedirectIfSetupRequired::class, AdminAuthenticated::class])->
     Route::post('/settings/2fa/enable', [SettingsController::class, 'enableTwoFactor'])->name('admin.settings.2fa.enable');
     Route::post('/settings/2fa/disable', [SettingsController::class, 'disableTwoFactor'])->name('admin.settings.2fa.disable');
     Route::post('/settings/2fa/recovery-codes', [SettingsController::class, 'regenerateRecoveryCodes'])->name('admin.settings.2fa.recovery-codes');
+
+    // Passkeys
+    Route::post('/settings/passkeys/options', [SettingsController::class, 'passkeyOptions'])->name('admin.settings.passkeys.options');
+    Route::post('/settings/passkeys', [SettingsController::class, 'registerPasskey'])->name('admin.settings.passkeys.register');
+    Route::delete('/settings/passkeys/{passkey}', [SettingsController::class, 'deletePasskey'])->name('admin.settings.passkeys.delete');
+    Route::patch('/settings/passkeys/{passkey}', [SettingsController::class, 'renamePasskey'])->name('admin.settings.passkeys.rename');
 
     // Import/Export
     Route::get('/import', [ImportController::class, 'index'])->name('admin.import.index');

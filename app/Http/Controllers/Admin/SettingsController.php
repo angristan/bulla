@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Admin;
 
+use App\Actions\Admin\Passkey\GenerateRegistrationOptions;
+use App\Actions\Admin\Passkey\GetPasskeyStatus;
+use App\Actions\Admin\Passkey\VerifyRegistration;
 use App\Actions\Admin\TwoFactor\DisableTwoFactor;
 use App\Actions\Admin\TwoFactor\EnableTwoFactor;
 use App\Actions\Admin\TwoFactor\GenerateRecoveryCodes;
@@ -14,6 +17,7 @@ use App\Actions\Admin\UpdateSettings;
 use App\Actions\Admin\WipeAllData;
 use App\Http\Controllers\Controller;
 use App\Models\Comment;
+use App\Models\Passkey;
 use BaconQrCode\Renderer\Image\SvgImageBackEnd;
 use BaconQrCode\Renderer\ImageRenderer;
 use BaconQrCode\Renderer\RendererStyle\RendererStyle;
@@ -33,10 +37,12 @@ class SettingsController extends Controller
     {
         $settings = UpdateSettings::getAll();
         $twoFactor = GetTwoFactorStatus::run();
+        $passkeys = GetPasskeyStatus::run();
 
         return Inertia::render('Settings/Index', [
             'settings' => $settings,
             'twoFactor' => $twoFactor,
+            'passkeys' => $passkeys,
         ]);
     }
 
@@ -367,5 +373,87 @@ class SettingsController extends Controller
             'success' => 'Recovery codes regenerated.',
             'recovery_codes' => $codes,
         ]);
+    }
+
+    /**
+     * Generate passkey registration options.
+     */
+    public function passkeyOptions(Request $request): JsonResponse
+    {
+        $result = GenerateRegistrationOptions::run();
+
+        // Store challenge in session
+        $request->session()->put('passkey_registration_challenge', $result['challenge']);
+        $request->session()->put('passkey_registration_challenge_at', now()->timestamp);
+
+        return response()->json($result['options']);
+    }
+
+    /**
+     * Register a new passkey.
+     */
+    public function registerPasskey(Request $request): JsonResponse
+    {
+        $challenge = $request->session()->get('passkey_registration_challenge');
+        $challengeAt = $request->session()->get('passkey_registration_challenge_at', 0);
+
+        // Expire after 2 minutes
+        if (! $challenge || now()->timestamp - $challengeAt > 120) {
+            $request->session()->forget(['passkey_registration_challenge', 'passkey_registration_challenge_at']);
+
+            return response()->json(['error' => 'Challenge expired'], 400);
+        }
+
+        $validated = $request->validate([
+            'credential' => ['required', 'array'],
+            'name' => ['required', 'string', 'max:255'],
+        ]);
+
+        $result = VerifyRegistration::run($validated['credential'], $challenge, $validated['name']);
+
+        // Clear challenge
+        $request->session()->forget(['passkey_registration_challenge', 'passkey_registration_challenge_at']);
+
+        if (! $result['success']) {
+            return response()->json(['error' => $result['message'] ?? 'Registration failed'], 400);
+        }
+
+        return response()->json([
+            'success' => true,
+            'passkey' => [
+                'id' => $result['passkey']->id,
+                'name' => $result['passkey']->name,
+                'created_at' => $result['passkey']->created_at->diffForHumans(),
+            ],
+        ]);
+    }
+
+    /**
+     * Delete a passkey.
+     */
+    public function deletePasskey(Passkey $passkey): JsonResponse
+    {
+        // Don't allow deleting the last passkey
+        if (Passkey::count() <= 1) {
+            return response()->json(['error' => 'Cannot delete the last passkey'], 400);
+        }
+
+        $passkey->delete();
+
+        return response()->json(['success' => true]);
+    }
+
+    /**
+     * Rename a passkey.
+     */
+    public function renamePasskey(Request $request, Passkey $passkey): JsonResponse
+    {
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+        ]);
+
+        $passkey->update(['name' => $validated['name']]);
+
+        return response()->json(['success' => true]);
     }
 }
