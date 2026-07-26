@@ -12,11 +12,11 @@
         "test:run": "vitest run"
     },
     "dependencies": {
-        "preact": "^10.28.3"
+        "preact": "^10.29.0"
     },
     "devDependencies": {
         "@biomejs/biome": "^2.4.5",
-        "@preact/preset-vite": "^2.10.3",
+        "@preact/preset-vite": "^2.10.4",
         "@testing-library/jest-dom": "^6.6.3",
         "@testing-library/preact": "^3.2.4",
         "jsdom": "^28.1.0",
