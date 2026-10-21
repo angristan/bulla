@@ -2,6 +2,11 @@
 	{$CADDY_GLOBAL_OPTIONS}
 
 	admin {$CADDY_SERVER_ADMIN_HOST}:{$CADDY_SERVER_ADMIN_PORT}
+
+	frankenphp {
+		# Stopgap for CVE-2026-109618/109619 until the base image ships PHP 8.5.12; Bulla never uses native upload progress.
+		php_ini session.upload_progress.enabled Off
+	}
 }
 
 {$CADDY_SERVER_SERVER_NAME} {
