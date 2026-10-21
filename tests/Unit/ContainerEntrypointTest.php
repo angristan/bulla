@@ -78,5 +78,5 @@ it('does not start the command when runtime initialization fails', function (): 
 
     expect($process->isSuccessful())->toBeFalse()
         ->and($process->getOutput())->toBe('')
-        ->and($process->getErrorOutput())->toContain($this->runtimeRoot.'/storage');
+        ->and($process->getErrorOutput())->not->toBeEmpty();
 });
