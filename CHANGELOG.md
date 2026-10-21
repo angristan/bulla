@@ -1,3 +1,10 @@
+## [1.2.8](https://github.com/angristan/bulla/compare/v1.2.7...v1.2.8) (2026-10-21)
+
+
+### Bug Fixes
+
+* harden container runtime and patch dependencies ([483ebc5](https://github.com/angristan/bulla/commit/483ebc5b07bd7801da926801374f4067f0bd9f0a))
+
 ## [1.2.7](https://github.com/angristan/bulla/compare/v1.2.6...v1.2.7) (2026-06-07)
 
 
