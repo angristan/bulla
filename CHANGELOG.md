@@ -1,3 +1,11 @@
+## [1.2.9](https://github.com/angristan/bulla/compare/v1.2.8...v1.2.9) (2026-10-21)
+
+
+### Bug Fixes
+
+* bump FrankenPHP base to 1.13.1 for PHP 8.5.12 security release ([11bf5d0](https://github.com/angristan/bulla/commit/11bf5d0e1d4092f16d5e12b156a970b402ee2c0e))
+* float FrankenPHP base tag to the 1.13 line ([49c0661](https://github.com/angristan/bulla/commit/49c06616cb0bb5a2e01fe978a224002876a5bea0))
+
 ## [1.2.8](https://github.com/angristan/bulla/compare/v1.2.7...v1.2.8) (2026-10-21)
 
 
