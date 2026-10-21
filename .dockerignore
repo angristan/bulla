@@ -1,0 +1,14 @@
+.git
+.env
+.env.*
+!.env.example
+vendor
+node_modules
+embed/node_modules
+public/build
+public/embed
+storage
+bootstrap/cache/*
+database/*.sqlite*
+frankenphp
+.DS_Store

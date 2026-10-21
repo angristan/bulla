@@ -21,8 +21,8 @@ ENV DEBIAN_FRONTEND=noninteractive \
     ROOT=${APP_DIR} \
     COMPOSER_FUND=0 \
     COMPOSER_MAX_PARALLEL_HTTP=24 \
-    XDG_CONFIG_HOME=${APP_DIR}/.config \
-    XDG_DATA_HOME=${APP_DIR}/.data
+    XDG_CONFIG_HOME=/tmp/xdg-config \
+    XDG_DATA_HOME=/tmp/xdg-data
 
 WORKDIR ${ROOT}
 
@@ -58,24 +58,19 @@ RUN userdel --remove --force www-data \
     && groupadd --force -g ${WWWGROUP} ${USER} \
     && useradd -ms /bin/bash --no-log-init --no-user-group -g ${WWWGROUP} -u ${WWWUSER} ${USER}
 
-RUN chown -R ${USER}:${USER} ${ROOT} /var/{log,run} \
-    && chmod -R a+rw ${ROOT} /var/{log,run}
-
 RUN cp ${PHP_INI_DIR}/php.ini-production ${PHP_INI_DIR}/php.ini
 
 # Remove file capabilities so the binary works with allowPrivilegeEscalation: false (no_new_privs)
 # Not needed since we bind to port 8080, not 80/443
 RUN setcap -r /usr/local/bin/frankenphp
 
-USER ${USER}
+COPY --link --from=composer /usr/bin/composer /usr/bin/composer
 
-COPY --link --chown=${WWWUSER}:${WWWUSER} --from=composer /usr/bin/composer /usr/bin/composer
+COPY --link deploy/php.ini ${PHP_INI_DIR}/conf.d/99-octane.ini
 
-COPY --link --chown=${WWWUSER}:${WWWUSER} deploy/php.ini ${PHP_INI_DIR}/conf.d/99-octane.ini
+COPY --link composer.json composer.lock ./
 
-COPY --link --chown=${WWWUSER}:${WWWUSER} composer.json composer.lock ./
-
-RUN composer install \
+RUN COMPOSER_ALLOW_SUPERUSER=1 composer install \
     --no-dev \
     --no-interaction \
     --no-autoloader \
@@ -102,23 +97,30 @@ RUN cd embed && npm run build
 
 FROM base AS app
 
-USER ${USER}
-
-COPY --link --chown=${WWWUSER}:${WWWUSER} . .
-COPY --link --chown=${WWWUSER}:${WWWUSER} --from=npm_build ${ROOT}/public/build public/build
-COPY --link --chown=${WWWUSER}:${WWWUSER} --from=npm_build ${ROOT}/public/embed public/embed
+COPY --link . .
+COPY --link --from=npm_build ${ROOT}/public/build public/build
+COPY --link --from=npm_build ${ROOT}/public/embed public/embed
+COPY --link --chmod=755 deploy/entrypoint.sh /usr/local/bin/bulla-entrypoint
 
 RUN mkdir -p \
-    storage/framework/{sessions,views,cache,testing} \
+    storage/app/{private,public} \
+    storage/framework/{sessions,views,cache/data} \
     storage/logs \
     bootstrap/cache \
-    database && chmod -R a+rw storage bootstrap/cache database
+    database
 
-RUN composer install \
+RUN COMPOSER_ALLOW_SUPERUSER=1 composer install \
     --classmap-authoritative \
     --no-interaction \
     --no-ansi \
     --no-dev \
-    && composer clear-cache
+    && composer clear-cache \
+    && chmod -R u=rwX,go=rX ${ROOT} \
+    && chown -R ${WWWUSER}:${WWWGROUP} storage bootstrap/cache database \
+    && chmod -R u=rwX,g=rX,o= storage bootstrap/cache database
 
-CMD ["sh", "-c", "php artisan key:generate --force && php artisan optimize && php artisan migrate --force && php artisan octane:start --server=frankenphp --host=0.0.0.0 --port=8080 --log-level=info --caddyfile=./deploy/Caddyfile.octane --max-requests=100"]
+USER ${USER}
+
+ENTRYPOINT ["bulla-entrypoint"]
+
+CMD ["sh", "-c", ": \"${APP_KEY:?Set APP_KEY to a persistent application key}\" && php artisan optimize && php artisan migrate --force && php artisan octane:start --server=frankenphp --host=0.0.0.0 --port=8080 --log-level=info --caddyfile=./deploy/Caddyfile.octane --max-requests=100"]

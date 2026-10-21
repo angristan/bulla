@@ -46,12 +46,17 @@ A self-hosted comment system for static sites and blogs.
 Bulla is designed to be easily self-hosted. Just a single Docker container with SQLite. PostgreSQL and imgproxy are optional.
 
 ```bash
+export APP_KEY="base64:$(openssl rand -base64 32)"
+
 docker run -d \
   -p 8000:8080 \
   -v bulla_data:/app/database \
+  -e APP_KEY \
   -e APP_URL=https://comments.example.com \
   ghcr.io/angristan/bulla:latest
 ```
+
+Save `APP_KEY` securely and reuse it when recreating the container. Startup no longer generates or replaces it.
 
 To add comments to your site:
 
