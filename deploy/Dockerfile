@@ -1,6 +1,6 @@
 ARG PHP_VERSION=8.5
-# FrankenPHP 1.11 is EOL and its php8.5 tag no longer receives PHP updates; the php8.5 suffix floats with patch releases.
-ARG FRANKENPHP_VERSION=1.13.1
+# FrankenPHP 1.11/1.12 are EOL and their php8.5 tags no longer receive updates; the 1.13 and php8.5 tags float with patch releases.
+ARG FRANKENPHP_VERSION=1.13
 ARG COMPOSER_VERSION=2.9
 ARG NODE_VERSION=24
 
