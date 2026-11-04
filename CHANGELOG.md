@@ -1,3 +1,10 @@
+## [1.2.10](https://github.com/angristan/bulla/compare/v1.2.9...v1.2.10) (2026-11-04)
+
+
+### Bug Fixes
+
+* **deps:** update symfony/mime to 7.4.22 for CVE-2026-45070 ([3928b70](https://github.com/angristan/bulla/commit/3928b701129c98be04c26457e48e3f6ee71f5170))
+
 ## [1.2.9](https://github.com/angristan/bulla/compare/v1.2.8...v1.2.9) (2026-10-21)
 
 
