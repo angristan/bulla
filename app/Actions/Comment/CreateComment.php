@@ -31,6 +31,7 @@ class CreateComment
      *     body: string,
      *     notify_replies?: bool,
      *     is_admin?: bool,
+     *     is_spam?: bool,
      *     title?: string|null,
      *     url?: string|null,
      * }  $data
@@ -93,6 +94,11 @@ class CreateComment
 
     private function sendNotifications(Comment $comment): void
     {
+        // Spam goes straight to the spam queue: no admin ping, no reply email.
+        if ($comment->isSpam()) {
+            return;
+        }
+
         // Email notifications (only if mail is configured)
         if (config('mail.default') !== 'log') {
             // Send new comment notification to admin (skips admin comments)
@@ -118,6 +124,10 @@ class CreateComment
         // Admin comments are always approved
         if ($data['is_admin'] ?? false) {
             return Comment::STATUS_APPROVED;
+        }
+
+        if ($data['is_spam'] ?? false) {
+            return Comment::STATUS_SPAM;
         }
 
         // Check moderation mode
