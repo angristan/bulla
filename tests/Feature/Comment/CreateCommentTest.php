@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Models\Comment;
 use App\Models\Setting;
 use App\Models\Thread;
+use Illuminate\Support\Facades\Crypt;
 
 uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
 
@@ -245,6 +246,7 @@ describe('POST /api/threads/{uri}/comments', function (): void {
 
             $response = $this->postJson('/api/threads/test/comments', [
                 'body' => 'Test',
+                'timestamp' => Crypt::encryptString((string) (time() - 10)),
             ]);
 
             $response->assertStatus(201)
@@ -256,6 +258,7 @@ describe('POST /api/threads/{uri}/comments', function (): void {
 
             $response = $this->postJson('/api/threads/test/comments', [
                 'body' => 'Test',
+                'timestamp' => Crypt::encryptString((string) (time() - 10)),
             ]);
 
             $response->assertStatus(201)

@@ -11,6 +11,8 @@ class GenerateTimestamp
 {
     use AsAction;
 
+    public const MAX_AGE_SECONDS = 86400;
+
     /**
      * Generate a signed timestamp for form submission.
      */
@@ -29,8 +31,10 @@ class GenerateTimestamp
         try {
             $timestamp = (int) Crypt::decryptString($signedTimestamp);
 
-            // Check if timestamp is reasonable (within last hour)
-            if ($timestamp > time() - 3600 && $timestamp <= time()) {
+            // Accept tokens up to a day old. A missing or invalid token flags the
+            // comment as spam, so the window must cover readers who leave the page
+            // open for a long time before posting.
+            if ($timestamp > time() - self::MAX_AGE_SECONDS && $timestamp <= time()) {
                 return $timestamp;
             }
 

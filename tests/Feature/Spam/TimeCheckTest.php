@@ -3,79 +3,89 @@
 declare(strict_types=1);
 
 use App\Actions\Spam\GenerateTimestamp;
+use App\Actions\Telegram\SendTelegramNotification;
+use App\Models\Comment;
 use App\Models\Setting;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Queue;
 
 uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
 
 describe('Time check spam protection', function (): void {
     beforeEach(function (): void {
         Setting::setValue('spam_min_time_seconds', '3');
+        Setting::setValue('moderation_mode', 'none');
+        Queue::fake();
     });
 
-    it('allows comments without timestamp', function (): void {
+    it('approves comments with a valid timestamp after the minimum time', function (): void {
         $response = $this->postJson('/api/threads/test/comments', [
             'body' => 'Test comment',
+            'timestamp' => Crypt::encryptString((string) (time() - 5)),
+        ]);
+
+        $response->assertStatus(201)->assertJsonPath('status', 'approved');
+        expect(Comment::first()->status)->toBe(Comment::STATUS_APPROVED);
+        SendTelegramNotification::assertPushed();
+    });
+
+    it('accepts a token from a page left open for several hours', function (): void {
+        $response = $this->postJson('/api/threads/test/comments', [
+            'body' => 'Slow writer',
+            'timestamp' => Crypt::encryptString((string) (time() - 6 * 3600)),
         ]);
 
         $response->assertStatus(201);
-    });
-
-    it('allows comments with valid timestamp after min time', function (): void {
-        // Generate timestamp 5 seconds ago
-        $timestamp = Crypt::encryptString((string) (time() - 5));
-
-        $response = $this->postJson('/api/threads/test/comments', [
-            'body' => 'Test comment',
-            'timestamp' => $timestamp,
-        ]);
-
-        $response->assertStatus(201);
+        expect(Comment::first()->status)->toBe(Comment::STATUS_APPROVED);
     });
 
     it('blocks comments submitted too fast', function (): void {
-        // Generate timestamp 1 second ago (too fast)
-        $timestamp = Crypt::encryptString((string) (time() - 1));
-
         $response = $this->postJson('/api/threads/test/comments', [
             'body' => 'Bot comment',
-            'timestamp' => $timestamp,
+            'timestamp' => Crypt::encryptString((string) (time() - 1)),
         ]);
 
         $response->assertStatus(422)
             ->assertJson(['error' => 'Please wait a moment before submitting.']);
     });
 
-    it('ignores invalid timestamp', function (): void {
+    it('silently stores comments as spam when the timestamp is unusable', function (array $extra): void {
         $response = $this->postJson('/api/threads/test/comments', [
-            'body' => 'Test comment',
-            'timestamp' => 'invalid_encrypted_value',
+            'body' => 'Direct API post',
+            ...$extra,
         ]);
 
-        // Invalid timestamps are ignored (treated as no timestamp)
-        $response->assertStatus(201);
+        // The client sees a normal pending comment, not a rejection.
+        $response->assertStatus(201)->assertJsonPath('status', 'pending');
+        expect(Comment::first()->status)->toBe(Comment::STATUS_SPAM);
+        SendTelegramNotification::assertNotPushed();
+    })->with([
+        // Closures defer Crypt until the application has booted.
+        'missing' => fn (): array => [],
+        'forged' => fn (): array => ['timestamp' => 'invalid_encrypted_value'],
+        'expired' => fn (): array => ['timestamp' => Crypt::encryptString((string) (time() - GenerateTimestamp::MAX_AGE_SECONDS - 60))],
+        'from the future' => fn (): array => ['timestamp' => Crypt::encryptString((string) (time() + 3600))],
+    ]);
+
+    it('does not flag admin comments without a timestamp', function (): void {
+        $response = $this->withSession(['admin_authenticated' => true])
+            ->postJson('/api/threads/test/comments', ['body' => 'Admin reply']);
+
+        $response->assertStatus(201)->assertJsonPath('status', 'approved');
+        expect(Comment::first()->status)->toBe(Comment::STATUS_APPROVED);
     });
 
-    it('ignores very old timestamps', function (): void {
-        // Generate timestamp 2 hours ago (too old, might be replayed)
-        $timestamp = Crypt::encryptString((string) (time() - 7200));
+    it('hides spam comments from the public thread', function (): void {
+        $this->postJson('/api/threads/test/comments', ['body' => 'Direct API post']);
 
-        $response = $this->postJson('/api/threads/test/comments', [
-            'body' => 'Test comment',
-            'timestamp' => $timestamp,
-        ]);
-
-        // Old timestamps are ignored for safety
-        $response->assertStatus(201);
+        $this->getJson('/api/threads/test/comments')
+            ->assertOk()
+            ->assertDontSee('Direct API post');
     });
 
     it('generates valid timestamp via action', function (): void {
         $timestamp = GenerateTimestamp::run();
 
-        expect($timestamp)->toBeString();
-        expect(strlen($timestamp))->toBeGreaterThan(0);
-
-        // Should be valid
         $decoded = GenerateTimestamp::validate($timestamp);
         expect($decoded)->not->toBeNull();
         expect($decoded)->toBeLessThanOrEqual(time());

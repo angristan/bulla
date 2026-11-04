@@ -74,6 +74,13 @@ class CommentController extends Controller
             return response()->json(['error' => $spamError], 422);
         }
 
+        // The embed always sends the signed timestamp it received from /api/config.
+        // A missing, forged or expired token means the client skipped the embed and
+        // posted straight to the API, which is what spam scripts do. Store the comment
+        // as spam instead of rejecting it, so the script gets no signal to adapt to and
+        // the admin can still recover a false positive from the spam queue.
+        $markAsSpam = ! $isAdmin && $timestamp === null;
+
         // Get commenter session data (GitHub authenticated)
         $commenter = $request->session()->get('commenter');
 
@@ -93,6 +100,7 @@ class CommentController extends Controller
                     'title' => $validated['title'] ?? null,
                     'url' => $validated['url'] ?? null,
                     'is_admin' => $isAdmin,
+                    'is_spam' => $markAsSpam,
                 ],
                 $request->ip(),
                 $request->userAgent()
@@ -110,7 +118,8 @@ class CommentController extends Controller
             'avatar' => $comment->avatarUrl(),
             'website' => $comment->website,
             'body_html' => $comment->body_html,
-            'status' => $comment->status,
+            // Report spam as pending so the client cannot tell it was flagged.
+            'status' => $comment->isSpam() ? Comment::STATUS_PENDING : $comment->status,
             'upvotes' => $comment->upvotes,
             'downvotes' => $comment->downvotes,
             'created_at' => $comment->created_at->toIso8601String(),
