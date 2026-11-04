@@ -1,3 +1,10 @@
+## [1.2.11](https://github.com/angristan/bulla/compare/v1.2.10...v1.2.11) (2026-11-04)
+
+
+### Bug Fixes
+
+* flag comments without a valid form timestamp as spam ([625d821](https://github.com/angristan/bulla/commit/625d821ac9711fdc217595688a3f782d501380f6))
+
 ## [1.2.10](https://github.com/angristan/bulla/compare/v1.2.9...v1.2.10) (2026-11-04)
 
 
